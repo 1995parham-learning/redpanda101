@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 func main() {
-	seeds := []string{"localhost:9092"}
+	seeds := []string{"127.0.0.1:9092"}
 	// One client can both produce and consume!
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
@@ -24,27 +25,37 @@ func main() {
 
 	ctx := context.Background()
 
-	// 1.) Producing a message
+	// 1. Producing a message
 	// All record production goes through Produce, and the callback can be used
 	// to allow for synchronous or asynchronous production.
 	var wg sync.WaitGroup
+
+	record := &kgo.Record{
+		Topic: "foo",
+		Value: []byte("bar"),
+	}
+
 	wg.Add(1)
-	record := &kgo.Record{Topic: "foo", Value: []byte("bar")}
 	cl.Produce(ctx, record, func(_ *kgo.Record, err error) {
 		defer wg.Done()
+
 		if err != nil {
-			fmt.Printf("record had a produce error: %v\n", err)
+			log.Printf("record had a produce error: %v\n", err)
 		}
 	})
 	wg.Wait()
 
 	// Alternatively, ProduceSync exists to synchronously produce a batch of records.
 	if err := cl.ProduceSync(ctx, record).FirstErr(); err != nil {
-		fmt.Printf("record had a produce error while synchronously producing: %v\n", err)
+		log.Printf("record had a produce error while synchronously producing: %v\n", err)
 	}
 
-	// 2.) Consuming messages from a topic
+	log.Printf("two new records are produced using synchronous and asynchronous manners\n")
+
+	// 2. Consuming messages from a topic
 	for {
+		log.Printf("waiting for new records to come...")
+
 		fetches := cl.PollFetches(ctx)
 		if errs := fetches.Errors(); len(errs) > 0 {
 			// All errors are retried internally when fetching, but non-retriable errors are
@@ -56,18 +67,18 @@ func main() {
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-			fmt.Println(string(record.Value), "from an iterator!")
+			log.Println(string(record.Value), "from an iterator!")
 		}
 
 		// or a callback function.
 		fetches.EachPartition(func(p kgo.FetchTopicPartition) {
 			for _, record := range p.Records {
-				fmt.Println(string(record.Value), "from range inside a callback!")
+				log.Println(string(record.Value), "from range inside a callback!")
 			}
 
 			// We can even use a second callback!
 			p.EachRecord(func(record *kgo.Record) {
-				fmt.Println(string(record.Value), "from a second callback!")
+				log.Println(string(record.Value), "from a second callback!")
 			})
 		})
 	}
