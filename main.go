@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	seeds := []string{"127.0.0.1:9092"}
+	seeds := []string{"127.0.0.1:19092"}
 	// One client can both produce and consume!
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
@@ -43,6 +43,7 @@ func main() {
 			log.Printf("record had a produce error: %v\n", err)
 		}
 	})
+	log.Printf("waiting for event to send")
 	wg.Wait()
 
 	// Alternatively, ProduceSync exists to synchronously produce a batch of records.
