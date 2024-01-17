@@ -9,6 +9,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+// nolint: funlen
 func main() {
 	seeds := []string{"127.0.0.1:19092"}
 	// One client can both produce and consume!
@@ -25,15 +26,16 @@ func main() {
 
 	ctx := context.Background()
 
-	// 1. Producing a message
-	// All record production goes through Produce, and the callback can be used
-	// to allow for synchronous or asynchronous production.
-	var wg sync.WaitGroup
-
+	// nolint: exhaustruct
 	record := &kgo.Record{
 		Topic: "foo",
 		Value: []byte("bar"),
 	}
+
+	// 1. Producing a message
+	// All record production goes through Produce, and the callback can be used
+	// to allow for synchronous or asynchronous production.
+	var wg sync.WaitGroup
 
 	wg.Add(1)
 	cl.Produce(ctx, record, func(_ *kgo.Record, err error) {
