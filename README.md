@@ -1,4 +1,7 @@
 <h1 align="center">Red Panda 🐼</h1>
+<p align="center">
+  <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/1995parham-learning/redpanda101/test.yaml?style=for-the-badge&logo=github">
+</p>
 
 
 ## Introduction
