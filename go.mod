@@ -2,7 +2,7 @@ module github.com/1995parham-teaching/redpanda101
 
 go 1.22
 
-require github.com/twmb/franz-go v1.17.0
+require github.com/twmb/franz-go v1.17.1
 
 require (
 	github.com/klauspost/compress v1.17.8 // indirect
