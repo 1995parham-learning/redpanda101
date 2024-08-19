@@ -1,6 +1,6 @@
 module github.com/1995parham-teaching/redpanda101
 
-go 1.22
+go 1.23
 
 require github.com/twmb/franz-go v1.17.1
 
