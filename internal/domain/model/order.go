@@ -28,9 +28,9 @@ const (
 )
 
 type Order struct {
-	ID          uint64
-	SrcCurrency uint64
-	DstCurrency uint64
-	Description string
-	Channel     Channel
+	ID          uint64  `json:"id,omitempty"`
+	SrcCurrency uint64  `json:"src_currency,omitempty"`
+	DstCurrency uint64  `json:"dst_currency,omitempty"`
+	Description string  `json:"description,omitempty"`
+	Channel     Channel `json:"channel,omitempty"`
 }
