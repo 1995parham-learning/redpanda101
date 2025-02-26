@@ -28,6 +28,7 @@ const (
 )
 
 type Order struct {
+	ID          uint64
 	SrcCurrency uint64
 	DstCurrency uint64
 	Description string

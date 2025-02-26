@@ -16,8 +16,8 @@ func main() {
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
-		kgo.ConsumerGroup("my-group-identifier"),
-		kgo.ConsumeTopics("foo"),
+		kgo.ConsumerGroup("koochooloo-group"),
+		kgo.ConsumeTopics("orders"),
 	)
 	if err != nil {
 		panic(err)
@@ -28,7 +28,7 @@ func main() {
 
 	// nolint: exhaustruct
 	record := &kgo.Record{
-		Topic: "foo",
+		Topic: "orders",
 		Value: []byte("bar"),
 	}
 
