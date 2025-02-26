@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
@@ -20,6 +21,8 @@ const prefix = "redpanda101_"
 // Config holds all configurations.
 type Config struct {
 	fx.Out
+
+	Kafka kafka.Config
 }
 
 func Provide() Config {
