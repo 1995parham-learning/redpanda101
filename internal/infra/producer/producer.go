@@ -10,11 +10,13 @@ import (
 )
 
 type Producer struct {
-	client kgo.Client
+	client *kgo.Client
 }
 
-func Provide() *Producer {
-	return &Producer{}
+func Provide(client *kgo.Client) *Producer {
+	return &Producer{
+		client: client,
+	}
 }
 
 func (p *Producer) Produce(ctx context.Context, r model.Order) error {
