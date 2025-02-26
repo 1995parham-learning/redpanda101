@@ -22,7 +22,7 @@ const prefix = "redpanda101_"
 type Config struct {
 	fx.Out
 
-	Kafka kafka.Config
+	Kafka kafka.Config `json:"kafka,omitempty" koanf:"kafka"`
 }
 
 func Provide() Config {
