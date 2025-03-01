@@ -19,8 +19,6 @@ export let options = {
 
 export default function () {
   group("publish", () => {
-    let name = "";
-
     let payload = JSON.stringify({
       channel: 0,
       description: `hello world ${exec.vu.iterationInInstance}`,
@@ -28,7 +26,7 @@ export default function () {
       src_currency: 0,
     });
 
-    let res = http.post(`${baseURL}/orders`, payload, {
+    let res = http.post(`${baseURL}/orders/`, payload, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -37,7 +35,5 @@ export default function () {
     check(res, {
       success: (res) => res.status == 200,
     });
-
-    name = res.json();
   });
 }
