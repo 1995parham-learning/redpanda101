@@ -1,4 +1,4 @@
-package producer
+package consumer
 
 import (
 	consumer "github.com/1995parham-teaching/redpanda101/internal/infra"
