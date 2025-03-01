@@ -8,7 +8,7 @@ build:
 
 # update go packages
 update:
-    go get -u
+    @cd ./cmd/redpanda101 && go get -u
 
 # set up the dev environment with docker-compose
 dev cmd *flags:
