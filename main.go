@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/1995parham-teaching/redpanda101/internal/infra/config"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/http/server"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -15,6 +16,7 @@ func main() {
 			return &fxevent.ZapLogger{Logger: logger}
 		}),
 		fx.Provide(kafka.Provide),
+		fx.Provide(server.Provide),
 		fx.Invoke(main),
 	).Run()
 }
