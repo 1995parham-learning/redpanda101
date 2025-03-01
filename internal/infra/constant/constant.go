@@ -1,3 +1,8 @@
 package constant
 
-const Topic = "orders"
+import "time"
+
+const (
+	Topic       = "orders"
+	PingTimeout = 5 * time.Second
+)

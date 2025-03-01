@@ -11,25 +11,31 @@ type Order struct {
 	Producer *producer.Producer
 }
 
-func (c Order) New(ctx fuego.ContextWithBody[request.Order]) error {
+func (c Order) New(ctx fuego.ContextWithBody[request.Order]) (*model.Order, error) {
 	o, err := ctx.Body()
 	if err != nil {
-		return fuego.BadRequestError{
+		return nil, fuego.BadRequestError{
 			Err: err,
 		}
 	}
 
-	if err := c.Producer.Produce(ctx.Context(), model.Order{
-		ID: 0,
+	d := model.Order{
+		ID:          0,
 		SrcCurrency: o.SrcCurrency,
 		DstCurrency: o.DstCurrency,
 		Description: o.Description,
-		Channel: o.Channel,
-	}); err != nil {
-		return fuego.InternalServerError{
+		Channel:     o.Channel,
+	}
+
+	if err := c.Producer.Produce(ctx.Context(), d); err != nil {
+		return nil, fuego.InternalServerError{
 			Err: err,
 		}
 	}
 
-	return nil
+	return &d, nil
+}
+
+func (c Order) Register(s *fuego.Server) {
+	fuego.Post(s, "/orders/", c.New)
 }

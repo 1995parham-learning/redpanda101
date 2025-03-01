@@ -5,15 +5,21 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/1995parham-teaching/redpanda101/internal/infra/http/controller"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
 	"github.com/go-fuego/fuego"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-func Provide(lc fx.Lifecycle, logger *zap.Logger) *fuego.Server {
+func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *fuego.Server {
 	s := fuego.NewServer(
 		fuego.WithAddr(":1378"),
 	)
+
+	controller.Order{
+		Producer: p,
+	}.Register(s)
 
 	lc.Append(
 		fx.Hook{
