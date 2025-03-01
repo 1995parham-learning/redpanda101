@@ -10,6 +10,10 @@ build:
 update:
     @cd ./cmd/redpanda101 && go get -u
 
+# run golang-migrate
+migrate *flags:
+    go tool github.com/golang-migrate/migrate/v4/cmd/migrate {{ flags }}
+
 # set up the dev environment with docker-compose
 dev cmd *flags:
     #!/usr/bin/env bash
