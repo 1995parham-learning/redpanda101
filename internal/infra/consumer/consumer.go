@@ -54,7 +54,7 @@ func (c Consumer) Consume() {
 
 			var order model.Order
 			if err := json.Unmarshal(record.Value, &order); err != nil {
-				c.logger.Error("faild to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
+				c.logger.Error("failed to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
 			}
 
 			c.logger.Info("new order received", zap.Any("order", order))

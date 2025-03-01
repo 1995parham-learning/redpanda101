@@ -1,8 +1,8 @@
 package consumer
 
 import (
-	consumer "github.com/1995parham-teaching/redpanda101/internal/infra"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/config"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/consumer"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
 	"github.com/pterm/pterm"
