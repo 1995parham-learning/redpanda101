@@ -4,7 +4,7 @@ default:
 # build koochooloo binary
 build:
     @echo '{{ BOLD + CYAN }}Building Redpanda 101!{{ NORMAL }}'
-    go build -o redpanda101 main.go
+    go build -o redpanda101 ./cmd/redpanda101/main.go
 
 # update go packages
 update:
