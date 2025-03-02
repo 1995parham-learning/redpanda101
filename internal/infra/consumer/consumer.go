@@ -62,14 +62,16 @@ func (c Consumer) Consume() {
 
 			c.logger.Info("new order received", zap.Any("order", order))
 
-			_, _ = c.db.Exec(
+			if _, err := c.db.Exec(
 				context.Background(),
-				"INSERT INTO ORDERS VALUES ($1, $2, $3, $4)",
+				"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
 				order.Description,
 				order.SrcCurrency,
 				order.DstCurrency,
 				order.Channel,
-			)
+			); err != nil {
+				c.logger.Error("database insertion failed", zap.Error(err))
+			}
 		}
 	}
 }
