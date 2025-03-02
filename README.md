@@ -13,6 +13,13 @@ I rely on [franz-go](https://github.com/twmb/franz-go). Additionally, other alte
 
 ## Load Test
 
+- Producer load testing for inserting in Redpanda.
+- Producer load testing for inserting in Kafka.
+- Consumer load testing for inserting in Postgres:
+    - In memory (?)
+    - Using Disk
+- Consumer load testing for inserting in Redis
+
 ```
          /\      Grafana   /‾‾/
     /\  /  \     |\  __   /  /
