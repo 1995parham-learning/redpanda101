@@ -14,6 +14,10 @@ update:
 migrate *flags:
     go tool github.com/golang-migrate/migrate/v4/cmd/migrate {{ flags }}
 
+# create new migration
+migrate-new name:
+    @just migrate create -dir migrations -ext sql {{ name }}
+
 # set up the dev environment with docker-compose
 dev cmd *flags:
     #!/usr/bin/env bash
