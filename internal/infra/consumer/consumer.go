@@ -6,6 +6,7 @@ import (
 
 	"github.com/1995parham-teaching/redpanda101/internal/domain/model"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/constant"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -14,12 +15,14 @@ import (
 type Consumer struct {
 	client *kgo.Client
 	logger *zap.Logger
+	db     *pgxpool.Pool
 }
 
-func Provide(lc fx.Lifecycle, client *kgo.Client, logger *zap.Logger) Consumer {
+func Provide(lc fx.Lifecycle, client *kgo.Client, logger *zap.Logger, db *pgxpool.Pool) Consumer {
 	c := Consumer{
 		client: client,
 		logger: logger,
+		db:     db,
 	}
 
 	client.AddConsumeTopics(constant.Topic)
@@ -58,6 +61,15 @@ func (c Consumer) Consume() {
 			}
 
 			c.logger.Info("new order received", zap.Any("order", order))
+
+			_, _ = c.db.Exec(
+				context.Background(),
+				"INSERT INTO ORDERS VALUES ($1, $2, $3, $4)",
+				order.Description,
+				order.SrcCurrency,
+				order.DstCurrency,
+				order.Channel,
+			)
 		}
 	}
 }

@@ -3,6 +3,7 @@ package consumer
 import (
 	"github.com/1995parham-teaching/redpanda101/internal/infra/config"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/consumer"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/database"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
 	"github.com/pterm/pterm"
@@ -33,6 +34,7 @@ func Register(root *cobra.Command) {
 						return &fxevent.ZapLogger{Logger: logger}
 					}),
 					fx.Provide(kafka.Provide),
+					fx.Provide(database.Provide),
 					fx.Provide(consumer.Provide),
 					fx.Invoke(main),
 				).Run()
