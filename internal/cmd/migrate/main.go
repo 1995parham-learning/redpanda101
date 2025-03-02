@@ -18,6 +18,7 @@ import (
 func main(sh fx.Shutdowner, logger *zap.Logger, db *pgxpool.Pool) {
 	conn := stdlib.OpenDBFromPool(db)
 
+	// nolint: exhaustruct
 	driver, err := postgres.WithInstance(conn, &postgres.Config{})
 	if err != nil {
 		logger.Fatal("creating database instance failed", zap.Error(err))
