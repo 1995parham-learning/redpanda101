@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/1995parham-teaching/redpanda101/internal/infra/database"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
 	"go.uber.org/fx"
@@ -11,6 +12,9 @@ func Default() Config {
 	return Config{
 		Logger: logger.Config{
 			Level: "info",
+		},
+		Database: database.Config{
+			URL: "postgres://username:password@127.0.0.1:5432/redpanda",
 		},
 		Kafka: kafka.Config{
 			Seeds:         []string{"127.0.0.1:19092"},

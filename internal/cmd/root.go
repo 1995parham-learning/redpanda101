@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/1995parham-teaching/redpanda101/internal/cmd/consumer"
+	"github.com/1995parham-teaching/redpanda101/internal/cmd/migrate"
 	"github.com/1995parham-teaching/redpanda101/internal/cmd/producer"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +24,7 @@ func Execute() {
 
 	producer.Register(root)
 	consumer.Register(root)
+	migrate.Register(root)
 
 	if err := root.Execute(); err != nil {
 		log.Printf("failed to execute root command %s", err)

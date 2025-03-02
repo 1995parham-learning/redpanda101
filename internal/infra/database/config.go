@@ -1,5 +1,5 @@
 package database
 
 type Config struct {
-	URL string
+	URL string `json:"url,omitempty" koanf:"url"`
 }
