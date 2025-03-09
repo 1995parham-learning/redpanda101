@@ -3,11 +3,14 @@ package consumer
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/1995parham-teaching/redpanda101/internal/domain/model"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/constant"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/telemetry"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -16,13 +19,25 @@ type Consumer struct {
 	client *kgo.Client
 	logger *zap.Logger
 	db     *pgxpool.Pool
+	tracer trace.Tracer
+	metric *Metric
 }
 
-func Provide(lc fx.Lifecycle, client *kgo.Client, logger *zap.Logger, db *pgxpool.Pool) Consumer {
+func Provide(
+	lc fx.Lifecycle,
+	client *kgo.Client,
+	logger *zap.Logger,
+	db *pgxpool.Pool,
+	tele telemetry.Telemetery,
+) Consumer {
+	meter := tele.MeterProvider.Meter("consumer")
+
 	c := Consumer{
 		client: client,
 		logger: logger,
 		db:     db,
+		tracer: tele.TraceProvider.Tracer("cosnumer"),
+		metric: NewMetric(meter),
 	}
 
 	client.AddConsumeTopics(constant.Topic)
@@ -35,7 +50,8 @@ func Provide(lc fx.Lifecycle, client *kgo.Client, logger *zap.Logger, db *pgxpoo
 }
 
 func (c Consumer) Consume() {
-	ctx := context.Background()
+	ctx, span := c.tracer.Start(context.Background(), "consume.order")
+	defer span.End()
 
 	for {
 		fetches := c.client.PollFetches(ctx)
@@ -62,6 +78,8 @@ func (c Consumer) Consume() {
 
 			c.logger.Info("new order received", zap.Any("order", order))
 
+			start := time.Now()
+
 			if _, err := c.db.Exec(
 				context.Background(),
 				"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
@@ -72,6 +90,8 @@ func (c Consumer) Consume() {
 			); err != nil {
 				c.logger.Error("database insertion failed", zap.Error(err))
 			}
+
+			c.metric.DatabaseInsertionTimeRecord(ctx, time.Since(start))
 		}
 	}
 }

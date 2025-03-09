@@ -28,7 +28,7 @@ func (c Order) New(ctx fuego.ContextWithBody[request.Order]) (*model.Order, erro
 	}
 
 	d := model.Order{
-		ID:          rand.Uint64(),
+		ID:          rand.Uint64(), // nolint: gosec
 		SrcCurrency: o.SrcCurrency,
 		DstCurrency: o.DstCurrency,
 		Description: o.Description,

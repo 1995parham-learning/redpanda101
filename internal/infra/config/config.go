@@ -8,6 +8,7 @@ import (
 	"github.com/1995parham-teaching/redpanda101/internal/infra/database"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/telemetry"
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
@@ -24,9 +25,10 @@ const prefix = "redpanda101_"
 type Config struct {
 	fx.Out
 
-	Kafka    kafka.Config    `json:"kafka,omitempty"    koanf:"kafka"`
-	Logger   logger.Config   `json:"logger,omitempty"   koanf:"logger"`
-	Database database.Config `json:"database,omitempty" koanf:"database"`
+	Kafka     kafka.Config     `json:"kafka,omitempty"     koanf:"kafka"`
+	Logger    logger.Config    `json:"logger,omitempty"    koanf:"logger"`
+	Database  database.Config  `json:"database,omitempty"  koanf:"database"`
+	Telemetry telemetry.Config `json:"telemetry,omitempty" koanf:"telemetry"`
 }
 
 func Provide() Config {

@@ -5,12 +5,12 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/1995parham-teaching/redpanda101/internal/domain/model"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/constant"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/telemetry"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -43,10 +43,11 @@ func (p *Producer) Produce(ctx context.Context, r model.Order) error {
 
 	// nolint: exhaustruct
 	record := &kgo.Record{
-		Topic:   constant.Topic,
-		Value:   data,
-		Key:     key,
-		Headers: []kgo.RecordHeader{},
+		Topic:     constant.Topic,
+		Value:     data,
+		Key:       key,
+		Headers:   []kgo.RecordHeader{},
+		Timestamp: time.Now(),
 	}
 
 	if err := p.client.ProduceSync(ctx, record).FirstErr(); err != nil {

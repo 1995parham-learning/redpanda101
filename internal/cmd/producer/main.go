@@ -6,6 +6,7 @@ import (
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
+	"github.com/1995parham-teaching/redpanda101/internal/infra/telemetry"
 	"github.com/go-fuego/fuego"
 	"github.com/pterm/pterm"
 	"github.com/pterm/pterm/putils"
@@ -34,6 +35,7 @@ func Register(root *cobra.Command) {
 					fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
 						return &fxevent.ZapLogger{Logger: logger}
 					}),
+					fx.Provide(telemetry.Provide),
 					fx.Provide(kafka.Provide),
 					fx.Provide(producer.Provide),
 					fx.Provide(server.Provide),
