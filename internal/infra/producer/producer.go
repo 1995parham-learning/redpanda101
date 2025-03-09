@@ -33,9 +33,10 @@ func (p *Producer) Produce(ctx context.Context, r model.Order) error {
 
 	// nolint: exhaustruct
 	record := &kgo.Record{
-		Topic: constant.Topic,
-		Value: data,
-		Key:   key,
+		Topic:   constant.Topic,
+		Value:   data,
+		Key:     key,
+		Headers: []kgo.RecordHeader{},
 	}
 
 	if err := p.client.ProduceSync(ctx, record).FirstErr(); err != nil {
