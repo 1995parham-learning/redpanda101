@@ -1,18 +1,10 @@
 volumes:
   redpanda: null
 services:
-  scylla:
+  database:
     image: scylladb/scylla
     ports:
       - 9042:9042
-  postgres:
-    image: postgres:latest
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: redpanda
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:latest
     command:
