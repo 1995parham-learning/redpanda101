@@ -69,6 +69,8 @@ func (c Consumer) Consume() {
 
 			ctx, span := c.tracer.WithProcessSpan(record)
 
+			c.metric.MessageDelay.Observe(time.Since(record.Timestamp).Seconds())
+
 			var order model.Order
 			if err := json.Unmarshal(record.Value, &order); err != nil {
 				c.logger.Error("failed to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
@@ -89,7 +91,7 @@ func (c Consumer) Consume() {
 				c.logger.Error("database insertion failed", zap.Error(err))
 			}
 
-			c.metric.DatabaseInsertionTimeRecord(time.Since(start))
+			c.metric.DatabaseInsertionTime.Observe(time.Since(start).Seconds())
 
 			span.End()
 		}
