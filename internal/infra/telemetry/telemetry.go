@@ -3,14 +3,14 @@ package telemetry
 import (
 	"net/http"
 
-	"go.opentelemetry.io/otel/metric"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type Telemetery struct {
-	serviceName   string
-	namespace     string
+	ServiceName   string
+	Namespace     string
 	metricSrv     *http.Server
 	TraceProvider trace.TracerProvider
-	MeterProvider metric.MeterProvider
+	MeterRegistry *prometheus.Registry
 }

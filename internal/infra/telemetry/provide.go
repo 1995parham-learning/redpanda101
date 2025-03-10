@@ -8,13 +8,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/exporters/prometheus"
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
-	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
@@ -45,25 +43,15 @@ func setupTraceExporter(cfg Config) trace.SpanExporter {
 	return exporter
 }
 
-func setupMeterExporter(cfg Config) (metric.Reader, *http.Server) {
+func setupMeterExporter(reg *prometheus.Registry, cfg Config) *http.Server {
 	if !cfg.Meter.Enabled {
-		exporter, err := stdoutmetric.New()
-		if err != nil {
-			log.Fatalf("failed to initialize reader pipeline for metrics (stdout): %v", err)
-		}
-
-		return metric.NewPeriodicReader(exporter), nil
-	}
-
-	exporter, err := prometheus.New(prometheus.WithNamespace(cfg.Namespace))
-	if err != nil {
-		log.Fatalf("failed to initialize reader pipeline for metrics (prometheus): %v", err)
+		return nil
 	}
 
 	srv := http.NewServeMux()
-	srv.Handle("/metrics", promhttp.Handler())
+	srv.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg})) // nolint: exhaustruct
 
-	return exporter, &http.Server{
+	return &http.Server{
 		Addr:                         cfg.Meter.Address,
 		Handler:                      srv,
 		DisableGeneralOptionsHandler: false,
@@ -84,7 +72,9 @@ func setupMeterExporter(cfg Config) (metric.Reader, *http.Server) {
 }
 
 func Provide(lc fx.Lifecycle, cfg Config) Telemetery {
-	reader, srv := setupMeterExporter(cfg)
+	reg := prometheus.NewRegistry()
+	srv := setupMeterExporter(reg, cfg)
+
 	exporter := setupTraceExporter(cfg)
 
 	res, err := resource.Merge(
@@ -101,17 +91,14 @@ func Provide(lc fx.Lifecycle, cfg Config) Telemetery {
 	bsp := trace.NewBatchSpanProcessor(exporter)
 	tp := trace.NewTracerProvider(trace.WithSpanProcessor(bsp), trace.WithResource(res))
 
-	mp := metric.NewMeterProvider(metric.WithResource(res), metric.WithReader(reader))
-
 	otel.SetTracerProvider(tp)
-	otel.SetMeterProvider(mp)
 
 	tel := Telemetery{
-		serviceName:   cfg.ServiceName,
-		namespace:     cfg.Namespace,
+		ServiceName:   cfg.ServiceName,
+		Namespace:     cfg.Namespace,
 		metricSrv:     srv,
 		TraceProvider: tp,
-		MeterProvider: mp,
+		MeterRegistry: reg,
 	}
 
 	lc.Append(

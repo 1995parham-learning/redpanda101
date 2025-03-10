@@ -4,5 +4,5 @@ redpanda:
     - address: "127.0.0.1"
       port: 19092
   admin:
-    address: 127.0.0.1
+    address: "http://127.0.0.1"
     port: 19644

@@ -1,18 +1,18 @@
 package telemetry
 
 import (
-	mnoop "go.opentelemetry.io/otel/metric/noop"
+	"github.com/prometheus/client_golang/prometheus"
 	tnoop "go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
 )
 
 func ProvideNull(_ fx.Lifecycle) Telemetery {
 	tel := Telemetery{
-		serviceName:   "",
-		namespace:     "",
+		ServiceName:   "",
+		Namespace:     "",
 		metricSrv:     nil,
 		TraceProvider: tnoop.NewTracerProvider(),
-		MeterProvider: mnoop.NewMeterProvider(),
+		MeterRegistry: prometheus.NewPedanticRegistry(),
 	}
 
 	return tel

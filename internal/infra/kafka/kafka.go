@@ -12,19 +12,14 @@ import (
 	"go.uber.org/fx"
 )
 
-func Provide(lc fx.Lifecycle, tel telemetry.Telemetery, cfg Config) (*kgo.Client, error) {
+func Provide(lc fx.Lifecycle, tel telemetry.Telemetery, cfg Config) (*kgo.Client, *kotel.Tracer, error) {
 	tracer := kotel.NewTracer(
 		kotel.TracerProvider(tel.TraceProvider),
 		kotel.TracerPropagator(propagation.TraceContext{}),
 	)
 
-	meter := kotel.NewMeter(
-		kotel.MeterProvider(tel.MeterProvider),
-	)
-
 	kotel := kotel.NewKotel(
 		kotel.WithTracer(tracer),
-		kotel.WithMeter(meter),
 	)
 
 	client, err := kgo.NewClient(
@@ -33,7 +28,7 @@ func Provide(lc fx.Lifecycle, tel telemetry.Telemetery, cfg Config) (*kgo.Client
 		kgo.WithHooks(kotel.Hooks()...),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create kafka client %w", err)
+		return nil, nil, fmt.Errorf("failed to create kafka client %w", err)
 	}
 
 	ctx := context.Background()
@@ -42,12 +37,12 @@ func Provide(lc fx.Lifecycle, tel telemetry.Telemetery, cfg Config) (*kgo.Client
 	defer done()
 
 	if err := client.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping kafka cluster %w", err)
+		return nil, nil, fmt.Errorf("failed to ping kafka cluster %w", err)
 	}
 
 	lc.Append(fx.StopHook(func() {
 		client.Close()
 	}))
 
-	return client, nil
+	return client, tracer, nil
 }

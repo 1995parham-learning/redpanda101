@@ -27,10 +27,10 @@ const prefix = "redpanda101_"
 type Config struct {
 	fx.Out
 
-	Kafka     kafka.Config     `json:"kafka,omitempty"     koanf:"kafka"`
-	Logger    logger.Config    `json:"logger,omitempty"    koanf:"logger"`
-	Database  database.Config  `json:"database,omitempty"  koanf:"database"`
-	Telemetry telemetry.Config `json:"telemetry,omitempty" koanf:"telemetry"`
+	Kafka     kafka.Config     `json:"kafka"     koanf:"kafka"`
+	Logger    logger.Config    `json:"logger"    koanf:"logger"`
+	Database  database.Config  `json:"database"  koanf:"database"`
+	Telemetry telemetry.Config `json:"telemetry" koanf:"telemetry"`
 }
 
 func Provide(path Path) Config {

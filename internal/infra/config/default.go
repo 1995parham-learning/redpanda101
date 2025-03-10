@@ -30,7 +30,7 @@ func Default() Config {
 				Address: ":8080",
 				Enabled: true,
 			},
-			Namespace:   "1995parham-learning",
+			Namespace:   "parham_learning",
 			ServiceName: "redpanda101",
 		},
 		Out: fx.Out{},

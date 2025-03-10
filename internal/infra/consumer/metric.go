@@ -1,19 +1,24 @@
 package consumer
 
 import (
-	"context"
 	"time"
 
-	"go.opentelemetry.io/otel/metric"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Metric struct {
-	DatabaseInsertionTime metric.Float64Histogram
+	DatabaseInsertionTime prometheus.Histogram
 }
 
-func NewMetric(meter metric.Meter) *Metric {
-	dit, err := meter.Float64Histogram("database_insertion_time_seconds")
-	if err != nil {
+func NewMetric(reg *prometheus.Registry, namespace, serviceName string) *Metric {
+	dit := prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: namespace,
+		Subsystem: serviceName,
+		Name:      "database_insertion_time_seconds",
+		Help:      "time spend for inserting a record into the database in seconds",
+	})
+
+	if err := reg.Register(dit); err != nil {
 		panic(err)
 	}
 
@@ -22,6 +27,6 @@ func NewMetric(meter metric.Meter) *Metric {
 	}
 }
 
-func (m *Metric) DatabaseInsertionTimeRecord(ctx context.Context, d time.Duration) {
-	m.DatabaseInsertionTime.Record(ctx, d.Seconds())
+func (m *Metric) DatabaseInsertionTimeRecord(d time.Duration) {
+	m.DatabaseInsertionTime.Observe(d.Seconds())
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/1995parham-teaching/redpanda101/internal/infra/telemetry"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"go.opentelemetry.io/otel/trace"
+	"github.com/twmb/franz-go/plugin/kotel"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -19,7 +19,7 @@ type Consumer struct {
 	client *kgo.Client
 	logger *zap.Logger
 	db     *pgxpool.Pool
-	tracer trace.Tracer
+	tracer *kotel.Tracer
 	metric *Metric
 }
 
@@ -28,16 +28,15 @@ func Provide(
 	client *kgo.Client,
 	logger *zap.Logger,
 	db *pgxpool.Pool,
+	tracer *kotel.Tracer,
 	tele telemetry.Telemetery,
 ) Consumer {
-	meter := tele.MeterProvider.Meter("consumer")
-
 	c := Consumer{
 		client: client,
 		logger: logger,
 		db:     db,
-		tracer: tele.TraceProvider.Tracer("cosnumer"),
-		metric: NewMetric(meter),
+		tracer: tracer,
+		metric: NewMetric(tele.MeterRegistry, tele.Namespace, tele.ServiceName),
 	}
 
 	client.AddConsumeTopics(constant.Topic)
@@ -50,11 +49,8 @@ func Provide(
 }
 
 func (c Consumer) Consume() {
-	ctx, span := c.tracer.Start(context.Background(), "consume.order")
-	defer span.End()
-
 	for {
-		fetches := c.client.PollFetches(ctx)
+		fetches := c.client.PollFetches(context.Background())
 
 		if errs := fetches.Errors(); len(errs) > 0 {
 			for _, err := range errs {
@@ -71,6 +67,8 @@ func (c Consumer) Consume() {
 		for !iter.Done() {
 			record := iter.Next()
 
+			ctx, span := c.tracer.WithProcessSpan(record)
+
 			var order model.Order
 			if err := json.Unmarshal(record.Value, &order); err != nil {
 				c.logger.Error("failed to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
@@ -81,7 +79,7 @@ func (c Consumer) Consume() {
 			start := time.Now()
 
 			if _, err := c.db.Exec(
-				context.Background(),
+				ctx,
 				"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
 				order.Description,
 				order.SrcCurrency,
@@ -91,7 +89,9 @@ func (c Consumer) Consume() {
 				c.logger.Error("database insertion failed", zap.Error(err))
 			}
 
-			c.metric.DatabaseInsertionTimeRecord(ctx, time.Since(start))
+			c.metric.DatabaseInsertionTimeRecord(time.Since(start))
+
+			span.End()
 		}
 	}
 }
