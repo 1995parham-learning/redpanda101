@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.0
 
 require (
-	github.com/go-fuego/fuego v0.18.4
+	github.com/go-fuego/fuego v0.18.5
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/knadh/koanf/parsers/toml v0.1.0
