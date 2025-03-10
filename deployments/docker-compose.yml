@@ -1,8 +1,22 @@
 volumes:
   redpanda: null
   prometheus: null
+  grafana_data: null
 
 services:
+  grafana:
+    image: grafana/grafana
+    user: "472"
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./grafana/config.monitoring
+    restart: always
   jaeger:
     image: jaegertracing/all-in-one:latest
     healthcheck:
