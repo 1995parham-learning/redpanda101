@@ -22,6 +22,8 @@ func Execute() {
 		Short: "Use Redpanda instead of Kafka to process orders!",
 	}
 
+	root.PersistentFlags().StringP("config", "c", "config.toml", "path to config.toml")
+
 	producer.Register(root)
 	consumer.Register(root)
 	migrate.Register(root)

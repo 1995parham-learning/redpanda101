@@ -28,8 +28,11 @@ func Register(root *cobra.Command) {
 		&cobra.Command{
 			Use:   "produce",
 			Short: "Create orders from web and put them in redpanda 🐼",
-			Run: func(_ *cobra.Command, _ []string) {
+			Run: func(cmd *cobra.Command, _ []string) {
+				path := cmd.Flag("config").Value.String()
+
 				fx.New(
+					fx.Supply(config.Path(path)),
 					fx.Provide(config.Provide),
 					fx.Provide(logger.Provide),
 					fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {

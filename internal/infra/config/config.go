@@ -18,6 +18,8 @@ import (
 	"go.uber.org/fx"
 )
 
+type Path string
+
 // prefix indicates environment variables prefix.
 const prefix = "redpanda101_"
 
@@ -31,7 +33,7 @@ type Config struct {
 	Telemetry telemetry.Config `json:"telemetry,omitempty" koanf:"telemetry"`
 }
 
-func Provide() Config {
+func Provide(path Path) Config {
 	k := koanf.New(".")
 
 	// load default configuration from default function
@@ -40,7 +42,7 @@ func Provide() Config {
 	}
 
 	// load configuration from file
-	if err := k.Load(file.Provider("config.toml"), toml.Parser()); err != nil {
+	if err := k.Load(file.Provider(string(path)), toml.Parser()); err != nil {
 		log.Printf("error loading config.toml: %s", err)
 	}
 
