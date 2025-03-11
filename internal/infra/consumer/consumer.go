@@ -15,6 +15,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const numberOfProcessors = 10
+
 type Consumer struct {
 	client *kgo.Client
 	logger *zap.Logger
@@ -49,6 +51,12 @@ func Provide(
 }
 
 func (c Consumer) Consume() {
+	ch := make(chan *kgo.Record)
+
+	for range numberOfProcessors {
+		go c.process(ch)
+	}
+
 	for {
 		fetches := c.client.PollFetches(context.Background())
 
@@ -66,34 +74,39 @@ func (c Consumer) Consume() {
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-
-			ctx, span := c.tracer.WithProcessSpan(record)
-
-			c.metric.MessageDelay.Observe(time.Since(record.Timestamp).Seconds())
-
-			var order model.Order
-			if err := json.Unmarshal(record.Value, &order); err != nil {
-				c.logger.Error("failed to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
-			}
-
-			c.logger.Info("new order received", zap.Any("order", order))
-
-			start := time.Now()
-
-			if _, err := c.db.Exec(
-				ctx,
-				"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
-				order.Description,
-				order.SrcCurrency,
-				order.DstCurrency,
-				order.Channel,
-			); err != nil {
-				c.logger.Error("database insertion failed", zap.Error(err))
-			}
-
-			c.metric.DatabaseInsertionTime.Observe(time.Since(start).Seconds())
-
-			span.End()
+			ch <- record
 		}
+	}
+}
+
+func (c Consumer) process(ch <-chan *kgo.Record) {
+	for record := range ch {
+		ctx, span := c.tracer.WithProcessSpan(record)
+
+		c.metric.MessageDelay.Observe(time.Since(record.Timestamp).Seconds())
+
+		var order model.Order
+		if err := json.Unmarshal(record.Value, &order); err != nil {
+			c.logger.Error("failed to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
+		}
+
+		c.logger.Info("new order received", zap.Any("order", order))
+
+		start := time.Now()
+
+		if _, err := c.db.Exec(
+			ctx,
+			"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
+			order.Description,
+			order.SrcCurrency,
+			order.DstCurrency,
+			order.Channel,
+		); err != nil {
+			c.logger.Error("database insertion failed", zap.Error(err))
+		}
+
+		c.metric.DatabaseInsertionTime.Observe(time.Since(start).Seconds())
+
+		span.End()
 	}
 }

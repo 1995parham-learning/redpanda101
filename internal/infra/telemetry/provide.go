@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -47,6 +48,8 @@ func setupMeterExporter(reg *prometheus.Registry, cfg Config) *http.Server {
 	if !cfg.Meter.Enabled {
 		return nil
 	}
+
+	reg.MustRegister(collectors.NewGoCollector())
 
 	srv := http.NewServeMux()
 	srv.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg})) // nolint: exhaustruct
