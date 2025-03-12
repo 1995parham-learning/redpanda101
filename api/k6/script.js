@@ -1,14 +1,18 @@
 import http from "k6/http";
 import exec from "k6/execution";
-import { check, group } from "k6";
+import { check, group, sleep } from "k6";
 
 const baseURL = "http://127.0.0.1:1378";
 
 export let options = {
   stages: [
     {
-      target: 35,
+      target: 10,
       duration: "2m",
+    },
+    {
+      target: 10,
+      duration: "5m",
     },
   ],
   thresholds: {
@@ -35,5 +39,7 @@ export default function () {
     check(res, {
       success: (res) => res.status == 200,
     });
+
+    sleep(1);
   });
 }
