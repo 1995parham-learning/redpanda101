@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/1995parham-teaching/redpanda101/internal/infra/consumer"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/database"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
@@ -9,8 +10,12 @@ import (
 )
 
 // Default return default configuration.
+// nolint: mnd
 func Default() Config {
 	return Config{
+		Consumer: consumer.Config{
+			Concurrency: 30,
+		},
 		Logger: logger.Config{
 			Level: "info",
 		},

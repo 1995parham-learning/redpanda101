@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/1995parham-teaching/redpanda101/internal/infra/consumer"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/database"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/kafka"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
@@ -31,6 +32,7 @@ type Config struct {
 	Logger    logger.Config    `json:"logger"    koanf:"logger"`
 	Database  database.Config  `json:"database"  koanf:"database"`
 	Telemetry telemetry.Config `json:"telemetry" koanf:"telemetry"`
+	Consumer  consumer.Config  `json:"consumer"  koanf:"consumer"`
 }
 
 func Provide(path Path) Config {
