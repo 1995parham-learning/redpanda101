@@ -18,12 +18,7 @@ services:
       - ./grafana/config.monitoring
     restart: always
   jaeger:
-    image: jaegertracing/all-in-one:latest
-    healthcheck:
-      test: "/go/bin/all-in-one-linux status"
-      interval: 2s
-      timeout: 20s
-      retries: 10
+    image: jaegertracing/jaeger:latest
     ports:
       - target: 4317
         published: 4317
@@ -48,10 +43,6 @@ services:
       - 9090:9090
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  scylla:
-    image: scylladb/scylla
-    ports:
-      - 9042:9042
   postgres:
     image: postgres:latest
     ports:
@@ -107,18 +98,10 @@ services:
       CONSOLE_CONFIG_FILE: |
         kafka:
           brokers: ["redpanda:9092"]
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081"]
         redpanda:
           adminApi:
             enabled: true
             urls: ["http://redpanda:9644"]
-        connect:
-          enabled: true
-          clusters:
-            - name: local-connect-cluster
-              url: http://connect:8083
     ports:
       - 8080:8080
     depends_on:
