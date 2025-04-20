@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const numberOfProcessors = 10
+const numberOfProcessors = 20
 
 type Consumer struct {
 	client *kgo.Client
