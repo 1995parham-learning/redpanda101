@@ -1,0 +1,13 @@
+# Create an order in producer which creates a message to kafka
+# and then consumer creates a record in database.
+POST http://127.0.0.1:1378/orders/
+content-type: application/json
+
+{
+  "channel": 0,
+  "description": "hello world of cryptocurrency",
+  "dst_currency": 0,
+  "src_currency": 0
+}
+
+###
