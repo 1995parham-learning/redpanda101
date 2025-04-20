@@ -40,6 +40,6 @@ export default function () {
       success: (res) => res.status == 200,
     });
 
-    sleep(1);
+    sleep(0.001);
   });
 }
