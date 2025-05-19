@@ -15,7 +15,7 @@ require (
 	github.com/pterm/pterm v0.12.80
 	github.com/spf13/cobra v1.9.1
 	github.com/tidwall/pretty v1.2.1
-	github.com/twmb/franz-go v1.19.1
+	github.com/twmb/franz-go v1.19.3
 	github.com/twmb/franz-go/plugin/kotel v1.6.0
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.35.0
