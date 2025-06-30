@@ -86,7 +86,9 @@ func (c Consumer) process(ch <-chan *kgo.Record) {
 		c.metric.MessageDelay.Observe(time.Since(record.Timestamp).Seconds())
 
 		var order model.Order
-		if err := json.Unmarshal(record.Value, &order); err != nil {
+
+		err := json.Unmarshal(record.Value, &order)
+		if err != nil {
 			c.logger.Error("failed to parse an order from json", zap.Error(err), zap.ByteString("record", record.Value))
 		}
 
@@ -94,14 +96,15 @@ func (c Consumer) process(ch <-chan *kgo.Record) {
 
 		start := time.Now()
 
-		if _, err := c.db.Exec(
+		_, err = c.db.Exec(
 			ctx,
 			"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
 			order.Description,
 			order.SrcCurrency,
 			order.DstCurrency,
 			order.Channel,
-		); err != nil {
+		)
+		if err != nil {
 			c.logger.Error("database insertion failed", zap.Error(err))
 		}
 

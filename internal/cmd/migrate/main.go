@@ -32,7 +32,8 @@ func main(sh fx.Shutdowner, logger *zap.Logger, db *pgxpool.Pool) {
 		logger.Fatal("loading migration failed", zap.Error(err))
 	}
 
-	if err := m.Up(); err != nil {
+	err = m.Up()
+	if err != nil {
 		logger.Fatal("applying migration failed", zap.Error(err))
 	}
 

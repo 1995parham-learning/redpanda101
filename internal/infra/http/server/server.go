@@ -25,7 +25,8 @@ func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *fuego.S
 		fx.Hook{
 			OnStart: func(_ context.Context) error {
 				go func() {
-					if err := s.Run(); !errors.Is(err, http.ErrServerClosed) {
+					err := s.Run()
+					if !errors.Is(err, http.ErrServerClosed) {
 						logger.Fatal("echo initiation failed", zap.Error(err))
 					}
 				}()

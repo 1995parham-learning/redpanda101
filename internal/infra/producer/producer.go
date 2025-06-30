@@ -50,7 +50,8 @@ func (p *Producer) Produce(ctx context.Context, r model.Order) error {
 		Timestamp: time.Now(),
 	}
 
-	if err := p.client.ProduceSync(ctx, record).FirstErr(); err != nil {
+	err = p.client.ProduceSync(ctx, record).FirstErr()
+	if err != nil {
 		return fmt.Errorf("record had a produce error while synchronously producing: %w", err)
 	}
 

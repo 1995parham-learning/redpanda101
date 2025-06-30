@@ -26,7 +26,8 @@ func NewMetric(reg *prometheus.Registry, namespace, serviceName string) *Metric 
 		NativeHistogramExemplarTTL:      0,
 	})
 
-	if err := reg.Register(dit); err != nil {
+	err := reg.Register(dit)
+	if err != nil {
 		panic(err)
 	}
 
@@ -46,7 +47,8 @@ func NewMetric(reg *prometheus.Registry, namespace, serviceName string) *Metric 
 		NativeHistogramExemplarTTL:      0,
 	})
 
-	if err := reg.Register(md); err != nil {
+	err = reg.Register(md)
+	if err != nil {
 		panic(err)
 	}
 

@@ -25,7 +25,8 @@ func Provide(lc fx.Lifecycle, cfg Config) (*pgxpool.Pool, error) {
 	ctx, done = context.WithTimeout(ctx, constant.PingTimeout)
 	defer done()
 
-	if err := pool.Ping(ctx); err != nil {
+	err = pool.Ping(ctx)
+	if err != nil {
 		return nil, fmt.Errorf("database ping failed %w", err)
 	}
 

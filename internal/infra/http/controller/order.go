@@ -35,7 +35,8 @@ func (c Order) New(ctx fuego.ContextWithBody[request.Order]) (*model.Order, erro
 		Channel:     o.Channel,
 	}
 
-	if err := c.Producer.Produce(ctx.Context(), d); err != nil {
+	err = c.Producer.Produce(ctx.Context(), d)
+	if err != nil {
 		return nil, fuego.InternalServerError{
 			Err:      err,
 			Type:     "",

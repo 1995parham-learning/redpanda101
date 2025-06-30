@@ -36,7 +36,8 @@ func Provide(lc fx.Lifecycle, tel telemetry.Telemetery, cfg Config) (*kgo.Client
 	ctx, done := context.WithTimeout(ctx, constant.PingTimeout)
 	defer done()
 
-	if err := client.Ping(ctx); err != nil {
+	err = client.Ping(ctx)
+	if err != nil {
 		return nil, nil, fmt.Errorf("failed to ping kafka cluster %w", err)
 	}
 
