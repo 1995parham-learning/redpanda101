@@ -13,7 +13,7 @@ require (
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/prometheus/client_golang v1.23.0
 	github.com/pterm/pterm v0.12.81
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 	github.com/tidwall/pretty v1.2.1
 	github.com/twmb/franz-go v1.19.5
 	github.com/twmb/franz-go/plugin/kotel v1.6.0
@@ -91,7 +91,6 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.22.0 // indirect
-	github.com/go-openapi/swag v0.24.1 // indirect
 	github.com/go-openapi/swag/jsonname v0.24.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -208,9 +207,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.38.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.7.1 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/dig v1.19.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
