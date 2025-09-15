@@ -24,12 +24,12 @@ dev cmd *flags:
     echo '{{ BOLD + YELLOW }}Development environment based on docker-compose{{ NORMAL }}'
     set -euxo pipefail
     if [ {{ cmd }} = 'down' ]; then
-      docker compose -f ./docker-compose.yml down
-      docker compose -f ./docker-compose.yml rm
+      docker compose -f ./deployments/docker-compose.yml down
+      docker compose -f ./deployments/docker-compose.yml rm
     elif [ {{ cmd }} = 'up' ]; then
-      docker compose -f ./docker-compose.yml up --wait -d {{ flags }}
+      docker compose -f ./deployments/docker-compose.yml up --wait -d {{ flags }}
     else
-      docker compose -f ./docker-compose.yml {{ cmd }} {{ flags }}
+      docker compose -f ./deployments/docker-compose.yml {{ cmd }} {{ flags }}
     fi
 
 # run golangci-lint
