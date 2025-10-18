@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func main(_ consumer.Consumer) {
+func main(_ *consumer.Consumer) {
 	area, _ := pterm.DefaultArea.WithCenter().Start()
 	text, _ := pterm.DefaultBigText.WithLetters(putils.LettersFromString("Redpanda101")).Srender()
 	area.Update(text)
