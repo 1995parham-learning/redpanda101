@@ -13,7 +13,7 @@ require (
 	github.com/knadh/koanf/v2 v2.3.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/pterm/pterm v0.12.82
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/tidwall/pretty v1.2.1
 	github.com/twmb/franz-go v1.20.5
 	github.com/twmb/franz-go/plugin/kotel v1.6.0
