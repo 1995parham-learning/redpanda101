@@ -11,13 +11,118 @@ I rely on [franz-go](https://github.com/twmb/franz-go). Additionally, other alte
 
 ## How to
 
+To evaluate the new event driven architecture, I used [redpanda101](https://github.com/1995parham-learning/redpanda101) to demostrate the architecture and Go improvements. I used Redpanda because it is easier to run using docker and we don't want to compare Redpanda with Kafka in any way.
+
+## How to Run
+
+First, Running the requirements including database, promethues, etc:
+
+```bash
+cd deployment
+docker compose pull
+docker compose up
+```
+
+Redpanda requires to create topic manually, so before moving forward, create the `orders` topic through its UI.
+
+```text
+http://192.168.73.4:8080
+
+http://127.0.0.1:8080
+```
+
+and create `orders` table using built-in migrate command:
+
+```bash
+./redpanda101 migrate
+```
+
+Then run consumer and producer applications:
+
+```bash
+./redpanda101 -c configs/producer.toml produce
+./redpanda101 -c configs/consumer.toml consume
+```
+
+At the end, you can use k6 to do the load test:
+
+```bash
+k6 run api/k6/script.js
+```
+
+or use requests in the `demo.http` to try out APIs.
+
+## How to Monitor
+
+Because the sole purpose of the project is evaluation, redpanda101 has lots tools for monitoring and tracing available.
+
+- Prometheus
+
+```text
+http://192.168.73.4:9090
+
+http://127.0.0.1:9090
+```
+
+- Jeager
+
+```text
+http://192.168.73.4:16686
+
+http://127.0.0.1:16686
+```
+
+- Grafana
+
+```text
+username: parham.alvani@gmail.com
+password: P@ssw0rd
+
+http://192.168.73.4:3000
+
+http://127.0.0.1:3000
+```
+
+## Parameters
+
+There are lots of moving parts in here, just mention a few:
+
+- k6 script
+  - target
+  - sleep
+- consumer
+  - number of workers
+
+The `k6` script has two target first one is the ramp-up target and the second one indicate the steady target.
+
+---
+
+We plan to rewrite the Order Management System (OMS). In this rewrite, we aim to fully utilize memory and no longer rely on a database. Based on the architectures we've reviewed, I think we can start by using Kafka.
+
+Given that Kafka has been rewritten in Redpanda, I will use Redpanda to begin with, as it is better prepared for cloud environments. For example, I will develop a project using the Go language around Redpanda, so we can discuss it as a demo on Sunday. On the other hand, we can also test it under load and report the results.
+
+I used _k6_ for load testing.
+
+~~Regarding in-memory databases, I think Postgres might not be a bad idea, but I need further investigation.~~
+
+In the first step, an implementation was done using the Go language. In this implementation, Redpanda was used, and only messages were exchanged between the consumer and producer. The results were very promising. However, after adding Postgres, the results were not good at all. There are several issues with using Postgres:
+
+- The Postgres engine cannot operate in-memory.
+- By default, insert commands in Postgres are very slow.
+
+Another important issue here is, the events that we failed to process properly due to errors. Can we resend these events back to Redpanda?
+
+Since using Postgres did not go well, I decided to review other databases for in-memory usage. Among the available options, MongoDB, CouchDB, and Influx are very suitable, but all require payment for in-memory use.
+
+If we want to use time-series databases, there are not many free options. QuestDB is an open-source option, but unfortunately, its high-availability (HA) features require payment.
+
 ## Load Test
 
 - Producer load testing for inserting in Redpanda.
 - Producer load testing for inserting in Kafka.
 - Consumer load testing for inserting in Postgres:
-    - In memory (?)
-    - Using Disk
+  - In memory (?)
+  - Using Disk
 - Consumer load testing for inserting in Redis
 
 ```
