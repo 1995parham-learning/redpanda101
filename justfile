@@ -35,3 +35,19 @@ dev cmd *flags:
 # run golangci-lint
 lint:
     golangci-lint run -c .golangci.yml --fix
+
+# run producer (HTTP API + Kafka producer)
+produce:
+    go run ./cmd/redpanda101 -c configs/producer.toml produce
+
+# run consumer (Kafka consumer + PostgreSQL)
+consume:
+    go run ./cmd/redpanda101 -c configs/consumer.toml consume
+
+# run database migrations
+db-migrate:
+    go run ./cmd/redpanda101 migrate
+
+# create redpanda topic
+redpanda-migrate:
+    docker exec -it deployments-redpanda-1 rpk topic create orders --brokers localhost:9092

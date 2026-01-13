@@ -2,6 +2,7 @@ volumes:
   redpanda: null
   prometheus: null
   grafana_data: null
+  postgres_data: null
 
 services:
   grafana:
@@ -48,11 +49,26 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./pg-data/:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql
     environment:
       POSTGRES_USER: username
       POSTGRES_PASSWORD: password
       POSTGRES_DB: redpanda
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U username -d redpanda"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    ports:
+      - 9187:9187
+    environment:
+      DATA_SOURCE_NAME: "postgresql://username:password@postgres:5432/redpanda?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:latest
     command:
@@ -103,6 +119,6 @@ services:
             enabled: true
             urls: ["http://redpanda:9644"]
     ports:
-      - 8080:8080
+      - 8085:8080
     depends_on:
       - redpanda

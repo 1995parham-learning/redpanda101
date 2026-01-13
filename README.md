@@ -50,7 +50,7 @@ docker compose up -d
 
 ### 2. Create Topic
 
-Open Redpanda Console at http://127.0.0.1:8080 and create the `orders` topic.
+Open Redpanda Console at http://127.0.0.1:8085 and create the `orders` topic.
 
 ### 3. Run Database Migrations
 
@@ -109,7 +109,7 @@ export redpanda101_consumer__concurrency=50
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| Redpanda Console | http://127.0.0.1:8080 | - |
+| Redpanda Console | http://127.0.0.1:8085 | - |
 | Prometheus | http://127.0.0.1:9090 | - |
 | Jaeger | http://127.0.0.1:16686 | - |
 | Grafana | http://127.0.0.1:3000 | `parham.alvani@gmail.com` / `P@ssw0rd` |

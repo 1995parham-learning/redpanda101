@@ -1,2 +1,2 @@
 [telemetry.meter]
-  address = ":8082"
+  address = ":8080"
