@@ -7,7 +7,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type Telemetery struct {
+type Telemetry struct {
 	ServiceName   string
 	Namespace     string
 	metricSrv     *http.Server

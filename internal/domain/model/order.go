@@ -27,8 +27,24 @@ const (
 	Locket             Channel = 61
 )
 
+// Valid returns true if the channel is a known valid value.
+func (c Channel) Valid() bool {
+	switch c {
+	case Unknown, Web, WebFast, WebConvert, WebSimple,
+		Android, AndroidFast, AndroidConvert, AndroidSimple,
+		iOS, iOSConvert,
+		API, APIInternal, APIConvert, APIInternalOld,
+		WebV1, WebV2,
+		SystemMargin, SystemBlock, SystemABCLiquidate, SystemLiquidator,
+		Locket:
+		return true
+	default:
+		return false
+	}
+}
+
 type Order struct {
-	ID          uint64  `json:"id,omitempty"`
+	ID          string  `json:"id,omitempty"`
 	SrcCurrency uint64  `json:"src_currency,omitempty"`
 	DstCurrency uint64  `json:"dst_currency,omitempty"`
 	Description string  `json:"description,omitempty"`

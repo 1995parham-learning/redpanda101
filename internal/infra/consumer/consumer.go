@@ -16,32 +16,33 @@ import (
 	"go.uber.org/zap"
 )
 
-const numberOfProcessors = 20
-
 type Consumer struct {
-	client *kgo.Client
-	logger *zap.Logger
-	db     *pgxpool.Pool
-	tracer *kotel.Tracer
-	metric *Metric
-	wg     sync.WaitGroup
+	client      *kgo.Client
+	logger      *zap.Logger
+	db          *pgxpool.Pool
+	tracer      *kotel.Tracer
+	metric      *Metric
+	wg          sync.WaitGroup
+	concurrency int
 }
 
-func Provide( // nolint: funlen
+func Provide( //nolint:funlen
 	lc fx.Lifecycle,
+	cfg Config,
 	client *kgo.Client,
 	logger *zap.Logger,
 	db *pgxpool.Pool,
 	tracer *kotel.Tracer,
-	tele telemetry.Telemetery,
+	tele telemetry.Telemetry,
 ) *Consumer {
 	c := &Consumer{
-		client: client,
-		logger: logger,
-		db:     db,
-		tracer: tracer,
-		metric: NewMetric(tele.MeterRegistry, tele.Namespace, tele.ServiceName),
-		wg:     sync.WaitGroup{},
+		client:      client,
+		logger:      logger,
+		db:          db,
+		tracer:      tracer,
+		metric:      NewMetric(tele.MeterRegistry, tele.Namespace, tele.ServiceName),
+		wg:          sync.WaitGroup{},
+		concurrency: cfg.Concurrency,
 	}
 
 	shutdown := make(chan struct{})
@@ -54,10 +55,8 @@ func Provide( // nolint: funlen
 			ctx, cancel := context.WithCancel(ctx)
 
 			go func() {
-				for {
-					<-shutdown
-					cancel()
-				}
+				<-shutdown
+				cancel()
 			}()
 
 			go c.Consume(ctx)
@@ -92,15 +91,15 @@ func Provide( // nolint: funlen
 }
 
 func (c *Consumer) Consume(ctx context.Context) {
-	ch := make(chan *kgo.Record, numberOfProcessors)
+	ch := make(chan *kgo.Record, c.concurrency)
 
-	for range numberOfProcessors {
+	for range c.concurrency {
 		c.wg.Add(1)
 
 		go c.process(ctx, ch)
 	}
 
-	c.logger.Info("consumer started", zap.Int("workers", numberOfProcessors))
+	c.logger.Info("consumer started", zap.Int("workers", c.concurrency))
 
 	// Main consume loop
 	for {
@@ -167,17 +166,8 @@ func (c *Consumer) process(_ context.Context, ch <-chan *kgo.Record) {
 
 		start := time.Now()
 
-		// nolint: contextcheck
-		_, err = c.db.Exec(
-			ctx,
-			"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
-			order.Description,
-			order.SrcCurrency,
-			order.DstCurrency,
-			order.Channel,
-		)
-		if err != nil {
-			c.logger.Error("database insertion failed", zap.Error(err))
+		if err := c.insertWithRetry(ctx, order); err != nil { //nolint:contextcheck
+			c.logger.Error("database insertion failed after retries", zap.Error(err), zap.Any("order", order))
 			span.RecordError(err)
 		}
 
@@ -187,4 +177,45 @@ func (c *Consumer) process(_ context.Context, ch <-chan *kgo.Record) {
 	}
 
 	c.logger.Debug("worker stopped")
+}
+
+const (
+	maxRetries     = 3
+	initialBackoff = 100 * time.Millisecond
+)
+
+func (c *Consumer) insertWithRetry(ctx context.Context, order model.Order) error {
+	var lastErr error
+
+	for attempt := range maxRetries {
+		_, err := c.db.Exec(
+			ctx,
+			"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
+			order.Description,
+			order.SrcCurrency,
+			order.DstCurrency,
+			order.Channel,
+		)
+		if err == nil {
+			return nil
+		}
+
+		lastErr = err
+		c.logger.Warn("database insertion failed, retrying",
+			zap.Error(err),
+			zap.Int("attempt", attempt+1),
+			zap.Int("max_retries", maxRetries),
+		)
+
+		// Exponential backoff: 100ms, 200ms, 400ms
+		backoff := initialBackoff * time.Duration(1<<attempt)
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(backoff):
+		}
+	}
+
+	return lastErr
 }

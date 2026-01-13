@@ -74,7 +74,7 @@ func setupMeterExporter(reg *prometheus.Registry, cfg Config) *http.Server {
 	}
 }
 
-func Provide(lc fx.Lifecycle, cfg Config) Telemetery {
+func Provide(lc fx.Lifecycle, cfg Config) Telemetry {
 	reg := prometheus.NewRegistry()
 	srv := setupMeterExporter(reg, cfg)
 
@@ -96,7 +96,7 @@ func Provide(lc fx.Lifecycle, cfg Config) Telemetery {
 
 	otel.SetTracerProvider(tp)
 
-	tel := Telemetery{
+	tel := Telemetry{
 		ServiceName:   cfg.ServiceName,
 		Namespace:     cfg.Namespace,
 		metricSrv:     srv,
@@ -114,7 +114,7 @@ func Provide(lc fx.Lifecycle, cfg Config) Telemetery {
 	return tel
 }
 
-func (t Telemetery) run(ctx context.Context) error {
+func (t Telemetry) run(ctx context.Context) error {
 	if t.metricSrv != nil {
 		lc := new(net.ListenConfig)
 
@@ -134,7 +134,7 @@ func (t Telemetery) run(ctx context.Context) error {
 	return nil
 }
 
-func (t Telemetery) shutdown(ctx context.Context) error {
+func (t Telemetry) shutdown(ctx context.Context) error {
 	err := t.metricSrv.Shutdown(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot shutdown the metric server %w", err)

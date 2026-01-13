@@ -12,7 +12,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func Provide(lc fx.Lifecycle, tel telemetry.Telemetery, cfg Config) (*kgo.Client, *kotel.Tracer, error) {
+func Provide(lc fx.Lifecycle, tel telemetry.Telemetry, cfg Config) (*kgo.Client, *kotel.Tracer, error) {
 	tracer := kotel.NewTracer(
 		kotel.TracerProvider(tel.TraceProvider),
 		kotel.TracerPropagator(propagation.TraceContext{}),

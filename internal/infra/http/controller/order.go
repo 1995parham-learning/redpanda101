@@ -1,12 +1,11 @@
 package controller
 
 import (
-	"math/rand/v2"
-
 	"github.com/1995parham-teaching/redpanda101/internal/domain/model"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/http/request"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
 	"github.com/go-fuego/fuego"
+	"github.com/google/uuid"
 )
 
 type Order struct {
@@ -28,7 +27,7 @@ func (c Order) New(ctx fuego.ContextWithBody[request.Order]) (*model.Order, erro
 	}
 
 	d := model.Order{
-		ID:          rand.Uint64(), // nolint: gosec
+		ID:          uuid.New().String(),
 		SrcCurrency: o.SrcCurrency,
 		DstCurrency: o.DstCurrency,
 		Description: o.Description,

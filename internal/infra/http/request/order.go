@@ -1,6 +1,12 @@
 package request
 
-import "github.com/1995parham-teaching/redpanda101/internal/domain/model"
+import (
+	"errors"
+
+	"github.com/1995parham-teaching/redpanda101/internal/domain/model"
+)
+
+var ErrInvalidChannel = errors.New("invalid channel value")
 
 type Order struct {
 	SrcCurrency uint64        `json:"src_currency,omitempty"`
@@ -10,5 +16,9 @@ type Order struct {
 }
 
 func (o Order) Validate() error {
+	if !o.Channel.Valid() {
+		return ErrInvalidChannel
+	}
+
 	return nil
 }

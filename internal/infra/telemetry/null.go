@@ -6,8 +6,8 @@ import (
 	"go.uber.org/fx"
 )
 
-func ProvideNull(_ fx.Lifecycle) Telemetery {
-	tel := Telemetery{
+func ProvideNull(_ fx.Lifecycle) Telemetry {
+	tel := Telemetry{
 		ServiceName:   "",
 		Namespace:     "",
 		metricSrv:     nil,
