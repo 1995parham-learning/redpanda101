@@ -1,6 +1,8 @@
 package migrate
 
 import (
+	"errors"
+
 	"github.com/1995parham-teaching/redpanda101/internal/infra/config"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/database"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
@@ -33,8 +35,14 @@ func main(sh fx.Shutdowner, logger *zap.Logger, db *pgxpool.Pool) {
 	}
 
 	err = m.Up()
-	if err != nil {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		logger.Fatal("applying migration failed", zap.Error(err))
+	}
+
+	if errors.Is(err, migrate.ErrNoChange) {
+		logger.Info("no new migrations to apply")
+	} else {
+		logger.Info("migrations applied successfully")
 	}
 
 	_ = sh.Shutdown()

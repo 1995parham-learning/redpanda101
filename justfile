@@ -51,3 +51,15 @@ db-migrate:
 # create redpanda topic
 redpanda-migrate:
     docker exec -it deployments-redpanda-1 rpk topic create orders --brokers localhost:9092
+
+# run k6 load test
+loadtest:
+    k6 run api/k6/script.js
+
+# setup and run everything (infrastructure + migrations)
+setup:
+    @echo '{{ BOLD + GREEN }}Setting up Redpanda101 environment{{ NORMAL }}'
+    just dev up
+    just redpanda-migrate
+    just db-migrate
+    @echo '{{ BOLD + GREEN }}Setup complete! Run "just produce" and "just consume" in separate terminals{{ NORMAL }}'
