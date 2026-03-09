@@ -52,7 +52,7 @@ func Provide( //nolint:funlen
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			ctx = context.WithoutCancel(ctx)
-			ctx, cancel := context.WithCancel(ctx)
+			ctx, cancel := context.WithCancel(ctx) //nolint:gosec // G118: cancel is called in the goroutine on shutdown
 
 			go func() {
 				<-shutdown
