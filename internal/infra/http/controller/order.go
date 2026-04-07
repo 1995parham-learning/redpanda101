@@ -1,29 +1,27 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/1995parham-teaching/redpanda101/internal/domain/model"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/http/request"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
-	"github.com/go-fuego/fuego"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v5"
 )
 
 type Order struct {
 	Producer *producer.Producer
 }
 
-func (c Order) New(ctx fuego.ContextWithBody[request.Order]) (*model.Order, error) {
-	o, err := ctx.Body()
-	if err != nil {
-		return nil, fuego.BadRequestError{
-			Err:      err,
-			Type:     "",
-			Title:    "Bad Request",
-			Status:   0,
-			Detail:   "failed to parse request body as an order",
-			Instance: "",
-			Errors:   nil,
-		}
+func (c Order) New(ctx *echo.Context) error {
+	var o request.Order
+	if err := ctx.Bind(&o); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "failed to parse request body as an order").Wrap(err)
+	}
+
+	if err := o.Validate(); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	d := model.Order{
@@ -34,22 +32,13 @@ func (c Order) New(ctx fuego.ContextWithBody[request.Order]) (*model.Order, erro
 		Channel:     o.Channel,
 	}
 
-	err = c.Producer.Produce(ctx.Context(), d)
-	if err != nil {
-		return nil, fuego.InternalServerError{
-			Err:      err,
-			Type:     "",
-			Title:    "Internal server error",
-			Status:   0,
-			Detail:   "failed to publish order into Kafka",
-			Instance: "",
-			Errors:   nil,
-		}
+	if err := c.Producer.Produce(ctx.Request().Context(), d); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to publish order into Kafka").Wrap(err)
 	}
 
-	return &d, nil
+	return ctx.JSON(http.StatusOK, d)
 }
 
-func (c Order) Register(s *fuego.Server) {
-	fuego.Post(s, "/orders/", c.New)
+func (c Order) Register(e *echo.Echo) {
+	e.POST("/orders/", c.New)
 }

@@ -7,25 +7,28 @@ import (
 
 	"github.com/1995parham-teaching/redpanda101/internal/infra/http/controller"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
-	"github.com/go-fuego/fuego"
+	"github.com/labstack/echo/v5"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *fuego.Server {
-	s := fuego.NewServer(
-		fuego.WithAddr(":1378"),
-	)
+func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *echo.Echo {
+	e := echo.New()
 
 	controller.Order{
 		Producer: p,
-	}.Register(s)
+	}.Register(e)
+
+	srv := &http.Server{
+		Addr:    ":1378",
+		Handler: e,
+	}
 
 	lc.Append(
 		fx.Hook{
 			OnStart: func(_ context.Context) error {
 				go func() {
-					err := s.Run()
+					err := srv.ListenAndServe()
 					if !errors.Is(err, http.ErrServerClosed) {
 						logger.Fatal("echo initiation failed", zap.Error(err))
 					}
@@ -33,9 +36,9 @@ func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *fuego.S
 
 				return nil
 			},
-			OnStop: s.Shutdown,
+			OnStop: srv.Shutdown,
 		},
 	)
 
-	return s
+	return e
 }

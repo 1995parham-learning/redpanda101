@@ -7,7 +7,7 @@ import (
 	"github.com/1995parham-teaching/redpanda101/internal/infra/logger"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/telemetry"
-	"github.com/go-fuego/fuego"
+	"github.com/labstack/echo/v5"
 	"github.com/pterm/pterm"
 	"github.com/pterm/pterm/putils"
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func main(_ *fuego.Server) {
+func main(_ *echo.Echo) {
 	area, _ := pterm.DefaultArea.WithCenter().Start()
 	text, _ := pterm.DefaultBigText.WithLetters(putils.LettersFromString("Redpanda101")).Srender()
 	area.Update(text)
