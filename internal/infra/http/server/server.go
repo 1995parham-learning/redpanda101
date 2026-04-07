@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/1995parham-teaching/redpanda101/internal/infra/http/controller"
 	"github.com/1995parham-teaching/redpanda101/internal/infra/producer"
@@ -19,24 +20,39 @@ func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *echo.Ec
 		Producer: p,
 	}.Register(e)
 
-	srv := &http.Server{
-		Addr:    ":1378",
-		Handler: e,
+	// Use echo's StartConfig (see https://echo.labstack.com/docs/start-server)
+	// instead of constructing a bare http.Server. BeforeServeFunc lets us set
+	// ReadHeaderTimeout to mitigate Slowloris (gosec G112), and graceful
+	// shutdown is driven by cancelling the context passed to sc.Start.
+	const readHeaderTimeout = 5 * time.Second
+
+	sc := echo.StartConfig{ //nolint:exhaustruct
+		Address: ":1378",
+		BeforeServeFunc: func(s *http.Server) error {
+			s.ReadHeaderTimeout = readHeaderTimeout
+
+			return nil
+		},
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	lc.Append(
 		fx.Hook{
 			OnStart: func(_ context.Context) error {
 				go func() {
-					err := srv.ListenAndServe()
-					if !errors.Is(err, http.ErrServerClosed) {
+					if err := sc.Start(ctx, e); err != nil && !errors.Is(err, http.ErrServerClosed) {
 						logger.Fatal("echo initiation failed", zap.Error(err))
 					}
 				}()
 
 				return nil
 			},
-			OnStop: srv.Shutdown,
+			OnStop: func(_ context.Context) error {
+				cancel()
+
+				return nil
+			},
 		},
 	)
 
