@@ -48,9 +48,9 @@ consume:
 db-migrate:
     go run ./cmd/redpanda101 migrate
 
-# create redpanda topic
+# create redpanda topics
 redpanda-migrate:
-    docker exec -it deployments-redpanda-1 rpk topic create orders --brokers localhost:9092
+    docker exec -it deployments-redpanda-1 rpk topic create orders trades --brokers localhost:9092
 
 # run k6 load test
 loadtest:

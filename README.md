@@ -5,29 +5,45 @@
 
 ## Introduction
 
-A demonstration project exploring [Redpanda](https://redpanda.com/) as a lightweight Kafka alternative with Go. This project implements an event-driven order management system using the producer-consumer pattern.
+A demonstration project exploring [Redpanda](https://redpanda.com/) as a lightweight Kafka alternative with Go. This project implements an event-driven order management and **matching** system: orders are published to Redpanda, and a matching engine materialises an in-memory limit order book straight from the log to cross orders into trades.
 
 For Kafka/Redpanda integration in Go, this project uses [franz-go](https://github.com/twmb/franz-go). Other alternatives include [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-go) and [Sarama](https://github.com/IBM/sarama).
 
 ## Architecture
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   HTTP Client   │────▶│    Producer     │────▶│    Redpanda     │
-│  (k6 / curl)    │     │  POST /orders/  │     │  (orders topic) │
-└─────────────────┘     └─────────────────┘     └────────┬────────┘
-                                                         │
-                                                         ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   PostgreSQL    │◀────│    Consumer     │◀────│  Worker Pool    │
-│   (orders)      │     │  (30 workers)   │     │  (concurrent)   │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────────┐
+│   HTTP Client   │────▶│    Producer     │────▶│      Redpanda       │
+│  (k6 / curl)    │     │  POST /orders/  │     │  orders (by symbol) │
+└─────────────────┘     └─────────────────┘     └─────┬───────────┬───┘
+                                                      │           │
+                          consumer (history)         ▼           ▼      matcher (single writer)
+                  ┌─────────────────┐     ┌─────────────────┐  ┌──────────────────────┐
+                  │   PostgreSQL    │◀────│    Consumer     │  │       Matcher        │
+                  │  orders/trades  │     │  (30 workers)   │  │  in-memory CLOB per  │
+                  └────────▲────────┘     └─────────────────┘  │  symbol (price-time) │
+                           │                                   └─────────┬────────────┘
+                           │ trades                                      │ trades
+                           └─────────────────────────────────◀──────────┘
+                                                                         ▼
+                                                            ┌─────────────────────┐
+                                                            │      Redpanda       │
+                                                            │    trades topic     │
+                                                            └─────────────────────┘
 ```
+
+The **consumer** persists raw order history (worker pool, order-independent). The
+**matcher** is a separate single-writer service: it replays the `orders` log from
+the start to rebuild every order book in memory, then continuously crosses new
+orders into trades, publishing them to the `trades` topic and PostgreSQL. Orders
+are keyed by **symbol** (`srcCurrency-dstCurrency`) so each market is totally
+ordered on its partition — the property a matching engine depends on.
 
 ## Features
 
-- **Producer**: HTTP API that accepts orders and publishes them to Redpanda
-- **Consumer**: Worker pool that processes messages and persists to PostgreSQL
+- **Producer**: HTTP API that accepts orders and publishes them to Redpanda, keyed by symbol
+- **Matcher**: Single-writer matching engine with a price-time-priority limit order book held in memory and materialised from the Redpanda log; executes at the maker price and emits trades
+- **Consumer**: Worker pool that persists order history to PostgreSQL
 - **Observability**: OpenTelemetry tracing (Jaeger) + Prometheus metrics + Grafana dashboards
 - **Resilience**: Retry logic with exponential backoff for database operations
 - **Configuration**: TOML files with environment variable overrides
@@ -48,9 +64,10 @@ cd deployments
 docker compose up -d
 ```
 
-### 2. Create Topic
+### 2. Create Topics
 
-Open Redpanda Console at http://127.0.0.1:8085 and create the `orders` topic.
+Open Redpanda Console at http://127.0.0.1:8085 and create the `orders` and
+`trades` topics (or use `just redpanda-migrate`).
 
 ### 3. Run Database Migrations
 
@@ -59,25 +76,38 @@ go build -o redpanda101 ./cmd/redpanda101
 ./redpanda101 migrate
 ```
 
-### 4. Start Producer & Consumer
+### 4. Start Producer, Matcher & Consumer
 
 ```bash
 # Terminal 1: Producer (HTTP API on port 1378)
 ./redpanda101 -c configs/producer.toml produce
 
-# Terminal 2: Consumer
+# Terminal 2: Matcher (in-memory order book → trades)
+./redpanda101 -c configs/consumer.toml match
+
+# Terminal 3: Consumer (order history → PostgreSQL, optional)
 ./redpanda101 -c configs/consumer.toml consume
 ```
 
 ### 5. Test the API
 
+Submit a resting sell, then a buy that crosses it:
+
 ```bash
+# A sell of 5 units at price 100 (rests in the book)
 curl -X POST http://127.0.0.1:1378/orders/ \
   -H "Content-Type: application/json" \
-  -d '{"src_currency": 1, "dst_currency": 2, "description": "test order", "channel": 1}'
+  -d '{"src_currency": 1, "dst_currency": 2, "side": "sell", "price": 100, "quantity": 5, "channel": 1}'
+
+# A buy of 5 units at price 105 → matches at the maker price of 100
+curl -X POST http://127.0.0.1:1378/orders/ \
+  -H "Content-Type: application/json" \
+  -d '{"src_currency": 1, "dst_currency": 2, "side": "buy", "price": 105, "quantity": 5, "channel": 1}'
 ```
 
-Or use the requests in `demo.http` with your REST client.
+The matcher logs each fill and the resulting top-of-book, and publishes a trade
+to the `trades` topic. Required order fields: `side` (`buy`/`sell`), `price`
+(> 0), `quantity` (> 0), and a valid `channel`.
 
 ## Configuration
 
@@ -125,6 +155,11 @@ export redpanda101_consumer__concurrency=50
 - `message_delay_seconds` - Time between publish and consume
 - `database_insertion_time_seconds` - PostgreSQL insert latency
 
+**Matcher:**
+- `orders_matched_total` - Orders processed by the engine
+- `trades_produced_total` - Trades generated from crossings
+- `match_latency_seconds` - Time to match a single order
+
 ## Load Testing
 
 Run the k6 load test:
@@ -170,12 +205,15 @@ running (2m00.0s), 00/35 VUs, 606848 complete and 0 interrupted iterations
 .
 ├── cmd/redpanda101/          # Application entry point
 ├── internal/
-│   ├── cmd/                  # CLI commands (produce, consume, migrate)
-│   ├── domain/model/         # Domain models (Order, Channel)
+│   ├── cmd/                  # CLI commands (produce, consume, match, migrate)
+│   ├── domain/
+│   │   ├── model/            # Domain models (Order, Trade, Side, Channel)
+│   │   └── orderbook/        # Pure CLOB matching engine (price-time priority) + tests
 │   └── infra/                # Infrastructure layer
 │       ├── config/           # Configuration loading
 │       ├── consumer/         # Kafka consumer + metrics
 │       ├── producer/         # Kafka producer + metrics
+│       ├── matcher/          # Matching service (orders → engine → trades)
 │       ├── database/         # PostgreSQL connection
 │       ├── http/             # HTTP server + controllers
 │       ├── kafka/            # Kafka client setup
@@ -207,10 +245,34 @@ just dev down
 just migrate create <name>
 ```
 
+## Matching Engine
+
+The order book lives in `internal/domain/orderbook` as pure, deterministic
+domain logic (no I/O, clocks, or randomness), which makes it exhaustively
+unit-testable:
+
+- **Continuous limit order book (CLOB)** per symbol with **price-time priority**:
+  best price first, ties broken by arrival order (FIFO).
+- **Maker-price execution**: a crossing taker fills at the resting order's price,
+  giving the taker any price improvement.
+- **Engine** routes each order to its symbol's book, lazily creating markets.
+
+The `matcher` service is the in-memory store made real: it replays the `orders`
+topic from offset 0 to rebuild every book, then processes orders **one at a time**
+(never on a worker pool) so the book observes them in log order.
+
+> **Single-writer caveat:** correct matching requires one writer per partition.
+> Run a single `match` instance per market; rebalancing the matcher's consumer
+> group across instances moves a symbol's book without a snapshot, so this demo
+> favours a single instance. Trades are persisted with `ON CONFLICT DO NOTHING`
+> so a cold-start replay is idempotent in the database.
+
 ## Design Decisions
 
 - **Redpanda over Kafka**: Easier to run locally with Docker, fully Kafka-compatible
 - **franz-go**: Modern, performant Kafka client with excellent Redpanda support
-- **Worker Pool Pattern**: Configurable concurrency for message processing
+- **Symbol-keyed orders**: Each market is totally ordered on one partition, which the matcher relies on
+- **Integer prices/quantities**: Avoids floating-point rounding bugs in money math
+- **Worker Pool Pattern**: Configurable concurrency for order *history* (consumer); the matcher is deliberately sequential
 - **Retry with Backoff**: Exponential backoff (100ms, 200ms, 400ms) for transient DB failures
-- **UUID for Order IDs**: Guaranteed uniqueness without coordination
+- **UUID for Order/Trade IDs**: Guaranteed uniqueness without coordination
