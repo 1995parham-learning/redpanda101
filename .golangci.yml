@@ -14,3 +14,10 @@ linters:
     - wrapcheck
     # we prefer inline error handling
     - noinlineerr
+  settings:
+    gomoddirectives:
+      # koanf v2's split submodules share import paths with the legacy v1
+      # monorepo, so `go get -u` pulls v1 in and breaks with "ambiguous import".
+      # Redirecting the bare path to the (subdir-free) v2 module is the fix.
+      replace-allow-list:
+        - github.com/knadh/koanf

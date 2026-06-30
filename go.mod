@@ -237,3 +237,11 @@ require (
 )
 
 tool github.com/golang-migrate/migrate/v4/cmd/migrate
+
+// koanf v2 splits its parsers/providers into standalone modules whose import
+// paths (github.com/knadh/koanf/parsers/*, /providers/*, /maps) are also present
+// in the legacy v1 monorepo github.com/knadh/koanf. `go get -u` probes that
+// prefix module and pulls v1 in, producing "ambiguous import" errors. The v2
+// module carries none of those subdirectories, so redirecting the bare path to
+// it keeps the prefix unambiguous without affecting the build.
+replace github.com/knadh/koanf => github.com/knadh/koanf/v2 v2.3.4
