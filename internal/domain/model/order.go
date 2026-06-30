@@ -1,5 +1,34 @@
 package model
 
+import "strconv"
+
+// Side indicates whether an order wants to buy or sell the base currency.
+type Side string
+
+const (
+	Buy  Side = "buy"
+	Sell Side = "sell"
+)
+
+// Valid returns true if the side is a known value.
+func (s Side) Valid() bool {
+	switch s {
+	case Buy, Sell:
+		return true
+	default:
+		return false
+	}
+}
+
+// Opposite returns the side an order must match against.
+func (s Side) Opposite() Side {
+	if s == Buy {
+		return Sell
+	}
+
+	return Buy
+}
+
 type Channel int
 
 const (
@@ -44,9 +73,22 @@ func (c Channel) Valid() bool {
 }
 
 type Order struct {
-	ID          string  `json:"id,omitempty"`
-	SrcCurrency uint64  `json:"src_currency,omitempty"`
-	DstCurrency uint64  `json:"dst_currency,omitempty"`
+	ID          string `json:"id,omitempty"`
+	SrcCurrency uint64 `json:"src_currency,omitempty"`
+	DstCurrency uint64 `json:"dst_currency,omitempty"`
+	Side        Side   `json:"side,omitempty"`
+	// Price is the quote-currency (DstCurrency) cost of one unit of the base
+	// currency (SrcCurrency). Integer to avoid floating-point money bugs.
+	Price uint64 `json:"price,omitempty"`
+	// Quantity is the amount of base currency (SrcCurrency) to trade.
+	Quantity    uint64  `json:"quantity,omitempty"`
 	Description string  `json:"description,omitempty"`
 	Channel     Channel `json:"channel,omitempty"`
+}
+
+// Symbol identifies the market an order belongs to: the base/quote currency
+// pair. All orders for a symbol share a single order book and must be processed
+// in arrival order, so it also serves as the Kafka partition key.
+func (o Order) Symbol() string {
+	return strconv.FormatUint(o.SrcCurrency, 10) + "-" + strconv.FormatUint(o.DstCurrency, 10)
 }
