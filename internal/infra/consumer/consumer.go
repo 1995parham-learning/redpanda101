@@ -190,10 +190,14 @@ func (c *Consumer) insertWithRetry(ctx context.Context, order model.Order) error
 	for attempt := range maxRetries {
 		_, err := c.db.Exec(
 			ctx,
-			"INSERT INTO orders (description, src_currency, dst_currency, channel) VALUES ($1, $2, $3, $4)",
+			`INSERT INTO orders (description, src_currency, dst_currency, side, price, quantity, channel)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 			order.Description,
 			order.SrcCurrency,
 			order.DstCurrency,
+			string(order.Side),
+			order.Price,
+			order.Quantity,
 			order.Channel,
 		)
 		if err == nil {
