@@ -257,15 +257,23 @@ unit-testable:
   giving the taker any price improvement.
 - **Engine** routes each order to its symbol's book, lazily creating markets.
 
-The `matcher` service is the in-memory store made real: it replays the `orders`
-topic from offset 0 to rebuild every book, then processes orders **one at a time**
-(never on a worker pool) so the book observes them in log order.
+The `matcher` service is the in-memory store made real. It is a **group-less
+(direct) consumer** that reads every partition of `orders` from offset 0 on every
+boot, processing orders **one at a time** (never on a worker pool) so the book
+observes them in log order. There are no committed offsets to resume from — the
+book is purely a materialised view of the log, so a restart rebuilds it exactly.
 
-> **Single-writer caveat:** correct matching requires one writer per partition.
-> Run a single `match` instance per market; rebalancing the matcher's consumer
-> group across instances moves a symbol's book without a snapshot, so this demo
-> favours a single instance. Trades are persisted with `ON CONFLICT DO NOTHING`
-> so a cold-start replay is idempotent in the database.
+To make that full-replay safe, trade side effects are **idempotent**: each trade
+gets a deterministic UUID derived from its unique `(buy, sell)` order pair and a
+timestamp taken from the order record (not the wall clock). Re-running the log
+therefore produces byte-identical trades — `ON CONFLICT (id) DO NOTHING` dedupes
+them in PostgreSQL, and downstream consumers can dedupe the `trades` topic by id.
+
+> **Single-writer model:** a direct consumer reads *all* partitions itself, so run
+> exactly **one** `match` instance — it is the sole writer for the whole topic.
+> The trade-off is replay cost (every boot reprocesses the full log and re-emits
+> historical trades). Scaling to one matcher per market — with snapshots so a
+> reassigned book recovers without a full replay — is the production follow-up.
 
 ## Design Decisions
 

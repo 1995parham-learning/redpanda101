@@ -97,10 +97,16 @@ func Provide( //nolint:funlen
 	return m, nil
 }
 
-// newClient builds a Kafka client dedicated to the matcher. It consumes the
-// orders topic from the start on first boot (rebuilding the whole book from the
-// log) under its own consumer group, so it resumes from its committed offset on
-// later boots instead of replaying — and produces trades on the same client.
+// newClient builds a Kafka client dedicated to the matcher. It is a direct
+// (group-less) consumer of every partition of the orders topic, always starting
+// at the beginning: the order book is a materialised view of the log, so every
+// boot replays the whole log and rebuilds every book from scratch. With no
+// committed offsets there is nothing to resume from, which keeps matching
+// correct across restarts at the cost of replay time. It produces trades on the
+// same client.
+//
+// Because a group-less consumer reads all partitions itself, run a SINGLE
+// matcher instance — it is the sole writer for the whole topic.
 func newClient(cfg kafka.Config, tele telemetry.Telemetry) (*kgo.Client, error) {
 	tracer := kotel.NewTracer(
 		kotel.TracerProvider(tele.TraceProvider),
@@ -110,7 +116,6 @@ func newClient(cfg kafka.Config, tele telemetry.Telemetry) (*kgo.Client, error) 
 
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(cfg.Seeds...),
-		kgo.ConsumerGroup(cfg.ConsumerGroup+"-matcher"),
 		kgo.ConsumeTopics(constant.Topic),
 		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
 		kgo.WithHooks(hooks...),
@@ -185,8 +190,11 @@ func (m *Matcher) handle(ctx context.Context, record *kgo.Record) {
 	m.metric.OrdersMatched.Inc()
 
 	for _, trade := range trades {
-		trade.ID = uuid.New().String()
-		trade.CreatedAt = time.Now()
+		// Stamp the trade deterministically so replaying the log reproduces the
+		// exact same trade: the id is derived from the unique (buy, sell) order
+		// pair and the time comes from the order record, not the wall clock.
+		trade.ID = tradeID(trade)
+		trade.CreatedAt = record.Timestamp
 
 		m.emit(ctx, trade)
 	}
@@ -225,8 +233,19 @@ func (m *Matcher) emit(ctx context.Context, trade model.Trade) {
 	m.metric.TradesProduced.Inc()
 }
 
-// persist writes a trade to PostgreSQL. The id is the engine-assigned UUID, so
-// re-inserting the same trade (e.g. on a replay) is a no-op.
+// tradeNamespace seeds deterministic trade UUIDs (UUIDv5).
+const tradeNamespace = "0b6f3a2e-4d1c-4f8a-9b2e-1f3c5d7e9a11"
+
+// tradeID derives a stable UUID from the unique (buy, sell) order pair. A taker
+// crosses any given maker at most once, so the pair identifies the trade — and
+// because matching is deterministic, replaying the log yields the same id, which
+// makes ON CONFLICT DO NOTHING a true dedupe.
+func tradeID(t model.Trade) string {
+	return uuid.NewSHA1(uuid.MustParse(tradeNamespace), []byte(t.BuyOrderID+":"+t.SellOrderID)).String()
+}
+
+// persist writes a trade to PostgreSQL. The id is deterministic, so re-inserting
+// the same trade (e.g. on a replay) is a no-op.
 func (m *Matcher) persist(ctx context.Context, trade model.Trade) error {
 	_, err := m.db.Exec(
 		ctx,
