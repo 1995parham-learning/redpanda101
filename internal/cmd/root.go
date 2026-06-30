@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/1995parham-teaching/redpanda101/internal/cmd/consumer"
+	"github.com/1995parham-teaching/redpanda101/internal/cmd/matcher"
 	"github.com/1995parham-teaching/redpanda101/internal/cmd/migrate"
 	"github.com/1995parham-teaching/redpanda101/internal/cmd/producer"
 	"github.com/spf13/cobra"
@@ -26,6 +27,7 @@ func Execute() {
 
 	producer.Register(root)
 	consumer.Register(root)
+	matcher.Register(root)
 	migrate.Register(root)
 
 	err := root.Execute()
