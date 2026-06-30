@@ -41,11 +41,13 @@ func (p *Producer) Produce(ctx context.Context, r model.Order) error {
 		return fmt.Errorf("converting order to json failed %w", err)
 	}
 
+	// Key by symbol (not order id) so every order for a market lands on the same
+	// partition and the matcher sees them in arrival order.
 	// nolint: exhaustruct
 	record := &kgo.Record{
 		Topic:     constant.Topic,
 		Value:     data,
-		Key:       []byte(r.ID),
+		Key:       []byte(r.Symbol()),
 		Timestamp: time.Now(),
 	}
 

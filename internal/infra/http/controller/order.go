@@ -28,6 +28,9 @@ func (c Order) New(ctx *echo.Context) error {
 		ID:          uuid.New().String(),
 		SrcCurrency: o.SrcCurrency,
 		DstCurrency: o.DstCurrency,
+		Side:        o.Side,
+		Price:       o.Price,
+		Quantity:    o.Quantity,
 		Description: o.Description,
 		Channel:     o.Channel,
 	}
