@@ -16,6 +16,7 @@ func NewMetric(reg *prometheus.Registry, namespace, serviceName string) *Metric 
 		Subsystem:   serviceName,
 		Name:        "messages_produced_total",
 		Help:        "total number of messages produced to kafka",
+		Unit:        "",
 		ConstLabels: prometheus.Labels{},
 	})
 
@@ -29,6 +30,7 @@ func NewMetric(reg *prometheus.Registry, namespace, serviceName string) *Metric 
 		Subsystem:                       serviceName,
 		Name:                            "produce_latency_seconds",
 		Help:                            "time spent producing a message to kafka in seconds",
+		Unit:                            "seconds",
 		ConstLabels:                     prometheus.Labels{},
 		Buckets:                         prometheus.DefBuckets,
 		NativeHistogramBucketFactor:     0,
@@ -50,6 +52,7 @@ func NewMetric(reg *prometheus.Registry, namespace, serviceName string) *Metric 
 		Subsystem:   serviceName,
 		Name:        "produce_errors_total",
 		Help:        "total number of errors while producing messages to kafka",
+		Unit:        "",
 		ConstLabels: prometheus.Labels{},
 	})
 
