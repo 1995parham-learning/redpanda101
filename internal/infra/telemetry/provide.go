@@ -52,7 +52,7 @@ func setupMeterExporter(reg *prometheus.Registry, cfg Config) *http.Server {
 	reg.MustRegister(collectors.NewGoCollector())
 
 	srv := http.NewServeMux()
-	srv.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg})) // nolint: exhaustruct
+	srv.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg})) // nolint: exhaustruct_v5
 
 	return &http.Server{
 		Addr:                         cfg.Meter.Address,
@@ -64,6 +64,8 @@ func setupMeterExporter(reg *prometheus.Registry, cfg Config) *http.Server {
 		WriteTimeout:                 time.Second,
 		IdleTimeout:                  time.Second,
 		MaxHeaderBytes:               0,
+		MaxHeaderValueCount:          0,
+		DisableClientPriority:        false,
 		TLSNextProto:                 nil,
 		ConnState:                    nil,
 		ErrorLog:                     nil,

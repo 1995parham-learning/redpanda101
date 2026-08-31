@@ -23,7 +23,7 @@ func main(_ *consumer.Consumer) {
 
 func Register(root *cobra.Command) {
 	root.AddCommand(
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		&cobra.Command{
 			Use:   "consume",
 			Short: "Consume orders from redpanda 🐼",

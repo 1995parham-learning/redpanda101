@@ -43,7 +43,7 @@ func (p *Producer) Produce(ctx context.Context, r model.Order) error {
 
 	// Key by symbol (not order id) so every order for a market lands on the same
 	// partition and the matcher sees them in arrival order.
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	record := &kgo.Record{
 		Topic:     constant.Topic,
 		Value:     data,

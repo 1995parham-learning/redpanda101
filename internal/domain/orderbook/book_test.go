@@ -9,7 +9,7 @@ import (
 
 // order is a tiny helper to build limit orders for the tests.
 func order(id string, side model.Side, price, qty uint64) model.Order {
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	return model.Order{ID: id, Side: side, Price: price, Quantity: qty}
 }
 

@@ -214,7 +214,7 @@ func (m *Matcher) emit(ctx context.Context, trade model.Trade) {
 		return
 	}
 
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	record := &kgo.Record{
 		Topic:     constant.TradesTopic,
 		Key:       []byte(trade.Symbol),

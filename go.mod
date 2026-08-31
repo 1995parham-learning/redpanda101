@@ -1,6 +1,6 @@
 module github.com/1995parham-teaching/redpanda101
 
-go 1.26
+go 1.27
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.19.1

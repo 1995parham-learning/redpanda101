@@ -22,7 +22,7 @@ func main(_ *matcher.Matcher) {
 
 func Register(root *cobra.Command) {
 	root.AddCommand(
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		&cobra.Command{
 			Use:   "match",
 			Short: "Match orders into trades using an in-memory order book 🐼",

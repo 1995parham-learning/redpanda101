@@ -26,7 +26,7 @@ func Provide(lc fx.Lifecycle, logger *zap.Logger, p *producer.Producer) *echo.Ec
 	// shutdown is driven by cancelling the context passed to sc.Start.
 	const readHeaderTimeout = 5 * time.Second
 
-	sc := echo.StartConfig{ //nolint:exhaustruct
+	sc := echo.StartConfig{ //nolint:exhaustruct_v5
 		Address: ":1378",
 		BeforeServeFunc: func(s *http.Server) error {
 			s.ReadHeaderTimeout = readHeaderTimeout

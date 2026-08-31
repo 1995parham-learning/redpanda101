@@ -170,7 +170,7 @@ func (b *OrderBook) newTrade(taker, maker model.Order, qty uint64) model.Trade {
 		buyID, sellID = maker.ID, taker.ID
 	}
 
-	// nolint: exhaustruct // ID and CreatedAt are stamped by the matcher service.
+	// nolint: exhaustruct_v5 // ID and CreatedAt are stamped by the matcher service.
 	return model.Trade{
 		Symbol:      b.symbol,
 		Price:       maker.Price,

@@ -20,7 +20,7 @@ import (
 func main(sh fx.Shutdowner, logger *zap.Logger, db *pgxpool.Pool) {
 	conn := stdlib.OpenDBFromPool(db)
 
-	// nolint: exhaustruct
+	// nolint: exhaustruct_v5
 	driver, err := postgres.WithInstance(conn, &postgres.Config{})
 	if err != nil {
 		logger.Fatal("creating database instance failed", zap.Error(err))
@@ -50,7 +50,7 @@ func main(sh fx.Shutdowner, logger *zap.Logger, db *pgxpool.Pool) {
 
 func Register(root *cobra.Command) {
 	root.AddCommand(
-		//nolint: exhaustruct
+		//nolint: exhaustruct_v5
 		&cobra.Command{
 			Use:   "migrate",
 			Short: "Applying migration",

@@ -50,9 +50,9 @@ func TestEngine_SymbolsAreIsolated(t *testing.T) {
 	e := orderbook.NewEngine()
 
 	// Same prices, different markets: must NOT cross.
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	m4 := model.Order{ID: "x", SrcCurrency: 3, DstCurrency: 4, Side: model.Sell, Price: 100, Quantity: 5}
-	//nolint:exhaustruct
+	//nolint:exhaustruct_v5
 	mb := model.Order{ID: "y", SrcCurrency: 1, DstCurrency: 2, Side: model.Buy, Price: 100, Quantity: 5}
 
 	if trades := submit(t, e, m4); len(trades) != 0 {
