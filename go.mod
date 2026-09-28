@@ -10,13 +10,13 @@ require (
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/providers/structs v1.0.1
-	github.com/knadh/koanf/v2 v2.3.6
-	github.com/labstack/echo/v5 v5.3.1
+	github.com/knadh/koanf/v2 v2.3.7
+	github.com/labstack/echo/v5 v5.4.0
 	github.com/prometheus/client_golang v1.24.1
 	github.com/pterm/pterm v0.12.83
 	github.com/spf13/cobra v1.10.2
-	github.com/tidwall/pretty v1.2.1
-	github.com/twmb/franz-go v1.21.7
+	github.com/tidwall/pretty v1.2.2
+	github.com/twmb/franz-go v1.22.1
 	github.com/twmb/franz-go/plugin/kotel v1.7.1
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.46.0
@@ -121,7 +121,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.24.1 // indirect
 	github.com/gookit/color v1.6.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.31.0 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -139,9 +139,9 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
-	github.com/klauspost/compress v1.20.0 // indirect
+	github.com/klauspost/compress v1.20.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
-	github.com/knadh/koanf/maps v0.1.2 // indirect
+	github.com/knadh/koanf/maps v0.1.3 // indirect
 	github.com/ktrysmt/go-bitbucket v0.10.0 // indirect
 	github.com/lib/pq v1.12.3 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
@@ -163,7 +163,7 @@ require (
 	github.com/neo4j/neo4j-go-driver v1.8.3 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/pierrec/lz4/v4 v4.1.29 // indirect
+	github.com/pierrec/lz4/v4 v4.1.31 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
@@ -176,7 +176,7 @@ require (
 	github.com/snowflakedb/gosnowflake v1.19.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.1 // indirect
-	github.com/twmb/franz-go/pkg/kmsg v1.13.1 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.14.0 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.2.0 // indirect
@@ -209,9 +209,9 @@ require (
 	golang.org/x/tools/godoc v0.1.0-deprecated // indirect
 	google.golang.org/api v0.297.0 // indirect
 	google.golang.org/genproto v0.0.0-20260911204522-f61a6ca850bd // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260911204522-f61a6ca850bd // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260911204522-f61a6ca850bd // indirect
-	google.golang.org/grpc v1.83.2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260921155816-b14227669459 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260921155816-b14227669459 // indirect
+	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	modernc.org/b v1.1.0 // indirect
@@ -239,4 +239,4 @@ tool github.com/golang-migrate/migrate/v4/cmd/migrate
 // prefix module and pulls v1 in, producing "ambiguous import" errors. The v2
 // module carries none of those subdirectories, so redirecting the bare path to
 // it keeps the prefix unambiguous without affecting the build.
-replace github.com/knadh/koanf => github.com/knadh/koanf/v2 v2.3.4
+replace github.com/knadh/koanf => github.com/knadh/koanf/v2 v2.3.7
