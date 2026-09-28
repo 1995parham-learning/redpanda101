@@ -16,7 +16,7 @@ require (
 	github.com/pterm/pterm v0.12.83
 	github.com/spf13/cobra v1.10.2
 	github.com/tidwall/pretty v1.2.1
-	github.com/twmb/franz-go v1.21.7
+	github.com/twmb/franz-go v1.22.0
 	github.com/twmb/franz-go/plugin/kotel v1.7.1
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.46.0
@@ -163,7 +163,7 @@ require (
 	github.com/neo4j/neo4j-go-driver v1.8.3 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/pierrec/lz4/v4 v4.1.29 // indirect
+	github.com/pierrec/lz4/v4 v4.1.30 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
@@ -176,7 +176,7 @@ require (
 	github.com/snowflakedb/gosnowflake v1.19.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.1 // indirect
-	github.com/twmb/franz-go/pkg/kmsg v1.13.1 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.14.0 // indirect
 	github.com/xanzy/go-gitlab v0.115.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.2.0 // indirect
