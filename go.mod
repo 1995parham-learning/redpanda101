@@ -10,7 +10,7 @@ require (
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/providers/structs v1.0.1
-	github.com/knadh/koanf/v2 v2.3.7
+	github.com/knadh/koanf/v2 v2.3.8
 	github.com/labstack/echo/v5 v5.4.0
 	github.com/prometheus/client_golang v1.25.0
 	github.com/pterm/pterm v0.12.84
@@ -238,4 +238,4 @@ tool github.com/golang-migrate/migrate/v4/cmd/migrate
 // prefix module and pulls v1 in, producing "ambiguous import" errors. The v2
 // module carries none of those subdirectories, so redirecting the bare path to
 // it keeps the prefix unambiguous without affecting the build.
-replace github.com/knadh/koanf => github.com/knadh/koanf/v2 v2.3.7
+replace github.com/knadh/koanf => github.com/knadh/koanf/v2 v2.3.8
